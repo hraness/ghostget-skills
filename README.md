@@ -123,6 +123,14 @@ against its own installed state. Live figures move with the installed catalog;
 only the fixture rows above are reproducible offline.
 [Methodology and caveats](docs/METRICS.md).
 
+The whole collection path was exercised against real providers on the same
+day. A two-account public plan passed `contracts check`, ran its reads
+sequentially with the plan's delay, and returned exact counts that matched the
+providers, with no gaps and no escalations across five recorded effects and
+zero model calls. Its receipt then replayed bit-for-bit through
+`ghostget-skills verify` with no Ghostget executable available at all, which
+is what "capture once, replay offline" means here.
+
 ## What healing means here
 
 Implemented: contract checks before any read is spent, Ghostget's one-retry
