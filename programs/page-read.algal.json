@@ -1,0 +1,46 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:page-read",
+  "name": "Page read",
+  "note": "Read one URL as Markdown through Ghostget's capture runtime (public or signed-in, per Ghostget's own routing) and return a byte-clipped extract with provenance. Zero model calls.",
+  "budgets": { "maxSteps": 8, "maxAgentCalls": 0, "maxWork": 1000000 },
+  "interface": {
+    "inputs": {
+      "url": { "cell": "src", "port": "url" },
+      "max-bytes": { "cell": "src", "port": "max-bytes" }
+    },
+    "outputs": {
+      "report": { "cell": "read", "port": "report" },
+      "text": { "cell": "format", "port": "out" }
+    }
+  },
+  "cells": [
+    { "id": "src", "kind": "input", "outputs": { "url": "text", "max-bytes": { "type": "json", "optional": true } } },
+    { "id": "read", "kind": "tool", "tool": "ghostget.page.read.v1", "budget": { "maxEffectMs": 180000 } },
+    {
+      "id": "format",
+      "kind": "expr",
+      "inputs": { "r": "json" },
+      "expr": {
+        "contract": "algal.expr.v1",
+        "program": [
+          "if", ["eq", ["get", "r", "ok"], true],
+          ["sconcat",
+            "[", ["if", ["isText", ["get", "r", "title"]], ["get", "r", "title"], "untitled"],
+            " · ", ["if", ["isText", ["get", "r", "canonicalUrl"]], ["get", "r", "canonicalUrl"], "?"],
+            " · ", ["toText", ["get", "r", "sourceBytes"]], "B",
+            ["if", ["eq", ["get", "r", "truncated"], true], ", clipped]", "]"],
+            "\n", ["get", "r", "markdown"]],
+          ["sconcat", "read failed: ",
+            ["if", ["isText", ["get", "r", "status"]], ["get", "r", "status"], "unknown"],
+            ["if", ["isText", ["get", "r", "diagnostic"]], ["sconcat", " — ", ["get", "r", "diagnostic"]], ""]]]
+      },
+      "output": { "kind": "text" }
+    }
+  ],
+  "edges": [
+    { "from": { "cell": "src", "port": "url" }, "to": { "cell": "read", "port": "url" } },
+    { "from": { "cell": "src", "port": "max-bytes" }, "to": { "cell": "read", "port": "max-bytes" } },
+    { "from": { "cell": "read", "port": "report" }, "to": { "cell": "format", "port": "r" } }
+  ]
+}

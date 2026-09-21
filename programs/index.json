@@ -1,0 +1,13 @@
+{
+  "package": "ghostget-skills",
+  "programs": [
+    { "id": "capability-survey", "kind": "fixed", "agentCalls": 0, "tools": ["ghostget.contracts.catalog.v1"], "consumer": "any agent before planning provider work" },
+    { "id": "plan-check", "kind": "fixed", "agentCalls": 0, "tools": ["ghostget.contracts.check.v1"], "consumer": "any scheduled collection before it spends a provider read" },
+    { "id": "profile-stats", "kind": "fixed", "agentCalls": 0, "tools": ["ghostget.contracts.check.v1", "time.wait.v1", "ghostget.invoke.read.v1"], "embeds": ["profile-stat-read", "profile-stat-attempt"], "consumer": "jungle publish-hraness-social-stats and any collection-plan owner" },
+    { "id": "profile-stat-read", "kind": "inner", "agentCalls": 0, "embeds": ["profile-stat-attempt"] },
+    { "id": "profile-stat-attempt", "kind": "inner", "agentCalls": 0 },
+    { "id": "page-read", "kind": "fixed", "agentCalls": 0, "tools": ["ghostget.page.read.v1"], "consumer": "URL clipping and research bundles" },
+    { "id": "auth-health", "kind": "fixed", "agentCalls": 0, "tools": ["ghostget.doctor.v1", "ghostget.auth.list.v1"], "consumer": "operators diagnosing a missing realm or pending recovery" },
+    { "id": "drift-watch", "kind": "fixed", "agentCalls": 0, "tools": ["ghostget.contracts.catalog.v1"], "slots": ["contracts-baseline"], "consumer": "scheduled contract-drift detection after a Ghostget upgrade" }
+  ]
+}

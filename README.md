@@ -1,0 +1,140 @@
+# Ghostget Skills
+
+**Typed Ghostget workflows for Claude Code, Codex, and Devin. Zero model calls, replayable receipts.**
+
+Ghostget gives agents bounded provider operations behind exact contracts.
+Agents still had to *sequence* them by re-reading prose: check the catalog,
+confirm each read is observed and R1, wait sixty seconds before the LinkedIn
+company read, retry once after sixty seconds only on a throttle, never retry a
+repair-auth, keep going with the independent rows. This package turns those
+sequences into [ALGAL](https://github.com/hraness/algal) organisms: data
+manifests the runtime executes, where retries, delays, gaps, and escalations
+are structure, the Ghostget CLI runs inside bounded tool effects, and every
+run is a receipt that replays bit-for-bit without touching a provider.
+
+[Programs](docs/programs.md) · [The seam](docs/seam.md) · [Healing, honestly](docs/healing.md) · [Metrics](docs/METRICS.md)
+
+## Install
+
+Requires Bun 1.3+ on macOS or Linux and a Ghostget with the `contracts`
+commands (0.18.23 or later; the package pins one).
+
+```sh
+bun add --global github:hraness/ghostget-skills
+ghostget-skills doctor
+ghostget-skills install-skills --target .agents/skills   # or .claude/skills, .devin/skills
+```
+
+`doctor` reports the pinned Ghostget version and whether its `contracts`
+commands answer. Ghostget's own account setup (`ghostget auth add`, `auth
+bind`, `adapter sync-bundled`) is unchanged and stays in Ghostget.
+
+## Use
+
+```sh
+# What can this machine do? One line plus the R1 read list, not a 400 KB dump.
+ghostget-skills run capability-survey --quiet --args '{"src":{"request":{}}}'
+
+# Will this plan run? One verdict per read, no provider access.
+ghostget-skills run plan-check --quiet --args '{"src":{"plan":'"$(cat plan.json)"'}}'
+
+# Collect it. Sequential, checked, retry policy as structure, last-good memory.
+ghostget-skills run profile-stats --dir ~/.ghostget-skills \
+  --args '{"src":{"plan":'"$(cat plan.json)"',"scheduled-date":"2026-09-21"}}' > run.json
+
+# Prove it later, offline.
+ghostget-skills verify run.json
+```
+
+`run` prints `{program, outcome, outputs, receipt}`. `plan.json` is a
+[`ghostget.collection-plan.v1`](docs/seam.md#a3-ghostgetcollection-planv1)
+document; Ghostget ships one for the Hraness accounts and validates any other
+with `ghostget contracts check`.
+
+## Programs
+
+| program | what you get | model calls |
+| --- | --- | --- |
+| `capability-survey` | per-adapter observed / capture-required operations and every runnable R1 read with its authority and input keys | 0 |
+| `plan-check` | one verdict per plan read: the exact binding, or one closed gap reason | 0 |
+| `profile-stats` | exact counts per account in plan order, categorical gaps, escalations by kind, last-good memory, and the full check | 0 |
+| `page-read` | one URL as clipped Markdown with provenance | 0 |
+| `auth-health` | doctor and auth locators as a readiness report, without subjects or paths | 0 |
+| `drift-watch` | contract hashes and states diffed against the remembered baseline | 0 |
+
+The two inner organisms `profile-stat-read` and `profile-stat-attempt` are
+what `profile-stats` embeds by digest; see [docs/programs.md](docs/programs.md).
+
+## How the seam works
+
+```
+consumer ──run──▶ ghostget-skills (organisms + fns + ToolRegistry)
+                       │ fixed argv · --json · stdin · byte caps · 120 s + 45 s grace
+                       ▼
+                  ghostget CLI  (contracts catalog | contracts check | invoke | read | doctor | auth list)
+                       │
+                  adapters · auth realms · state home   (private to Ghostget)
+```
+
+Ghostget owns acquisition, account binding, invocation authority, and a
+**machine-checkable contract surface**: `ghostget contracts catalog` (the
+installed catalog as a typed `ghostget.contract-catalog.v1` document),
+`ghostget contracts check --plan` (a verdict per read against that catalog),
+`ghostget contracts schema` (JSON Schema for every document), and the pure
+`@hraness/ghostget/contracts` SDK subpath. Ghostget never bundles a planner or
+an agent runtime. This package owns the organisms, the tool registry that
+wraps the CLI, the skills, and the evidence. Credentials never cross a port:
+auth IDs are locators, receipts carry contract identity only, and the recorded
+runner used for tests and benches never sees a real one.
+
+## Measured results
+
+`bun bench/run-bench.ts` compares the raw Ghostget documents an agent would
+read by hand against the outputs a consumer reads, on deterministic fixtures:
+
+| workflow | baseline bytes | program bytes | reduction |
+| --- | ---: | ---: | ---: |
+| capability-survey | 4,144 | 1,135 | 72.6% |
+| plan-check | 4,478 | 607 | 86.4% |
+| profile-stats (15 reads) | 39,389 | 2,137 | 94.6% |
+| profile-stats with a retry | 35,637 | 3,788 | 89.4% |
+| page-read (example.com) | 345 | 234 | 32.2% |
+| auth-health | 1,833 | 555 | 69.7% |
+| drift-watch | 8,296 | 4,177 | 49.7% |
+| **total** | **94,122** | **12,633** | **86.6%** |
+
+These are byte figures over synthetic fixtures with `est_tokens =
+ceil(bytes/4)`, not provider usage or task-success claims. The real installed
+catalog measured 423,883 bytes and the real doctor document 245,286 bytes on
+one developer Mac, so live reductions for the survey, drift, and health
+programs are larger than the fixture rows. [Methodology and caveats](docs/METRICS.md).
+
+## What healing means here
+
+Implemented: contract checks before any read is spent, Ghostget's one-retry
+disposition as a `repeat` cell, per-row isolation through `each` and `on:fail`
+edges, escalations from a closed set (`repair-auth`, `rebind`, `recapture`,
+`doctor`, `review-target`, `retry-later`, `review-plan`, `review-metric`,
+`install-adapter`), durable last-good and baseline memory, and receipts that
+fail verification when tampered with.
+
+Not claimed: repairing a drifted provider contract. That is a new authorised
+capture and a reviewed Ghostget release. This package detects it the moment it
+lands and names exactly what needs the human. [Details](docs/healing.md).
+
+## Development
+
+```sh
+bun install --frozen-lockfile
+bun run check            # typecheck, tests, admission, digests, recorded smoke + replay, bench currency, skills, privacy, pack scope
+bun bench/run-bench.ts   # regenerate bench/report after touching programs, src, tools, fixtures, or bench
+bun scripts/pin-digests.ts
+```
+
+Tests and the check gate run against recorded Ghostget responses; nothing here
+needs a provider, a browser, or an account. `GHOSTGET_BIN` may point at an
+absolute development build of Ghostget; a relative path is refused.
+
+## License
+
+MIT.

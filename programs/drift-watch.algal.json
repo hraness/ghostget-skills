@@ -1,0 +1,28 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:drift-watch",
+  "name": "Drift watch",
+  "note": "Compare the installed contract catalog against the baseline this organism remembers in a durable slot: changed contract hashes, versions, or states, plus added and removed operations. The first run records the baseline; every later run reports drift and advances it. Zero model calls.",
+  "budgets": { "maxSteps": 8, "maxAgentCalls": 0, "maxWork": 4000000 },
+  "interface": {
+    "inputs": { "request": { "cell": "src", "port": "request" } },
+    "outputs": {
+      "drift": { "cell": "drift", "port": "drift" },
+      "summary": { "cell": "drift", "port": "summary" },
+      "baseline": { "cell": "remember", "port": "data" }
+    }
+  },
+  "cells": [
+    { "id": "src", "kind": "input", "outputs": { "request": "json" } },
+    { "id": "catalog", "kind": "tool", "tool": "ghostget.contracts.catalog.v1", "budget": { "maxEffectMs": 180000 } },
+    { "id": "memory", "kind": "slot", "name": "contracts-baseline", "mode": "read", "default": {} },
+    { "id": "drift", "kind": "fn", "fn": "ghostget.catalog.drift.v1" },
+    { "id": "remember", "kind": "slot", "name": "contracts-baseline", "mode": "write" }
+  ],
+  "edges": [
+    { "from": { "cell": "src", "port": "request" }, "to": { "cell": "catalog", "port": "request" } },
+    { "from": { "cell": "catalog", "port": "report" }, "to": { "cell": "drift", "port": "report" } },
+    { "from": { "cell": "memory", "port": "data" }, "to": { "cell": "drift", "port": "baseline" } },
+    { "from": { "cell": "drift", "port": "baseline" }, "to": { "cell": "remember", "port": "data" } }
+  ]
+}

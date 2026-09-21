@@ -1,0 +1,72 @@
+{
+  "name": "ghostget-skills",
+  "version": "0.1.0",
+  "description": "Ghostget skills for Claude Code, Codex, and Devin: ALGAL organisms over machine-checkable Ghostget contracts. Typed provider reads, plan checks, drift watch, and replayable receipts with zero model calls.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hraness/ghostget-skills.git"
+  },
+  "homepage": "https://github.com/hraness/ghostget-skills#readme",
+  "bugs": {
+    "url": "https://github.com/hraness/ghostget-skills/issues"
+  },
+  "type": "module",
+  "bin": {
+    "ghostget-skills": "bin/ghostget-skills.js"
+  },
+  "exports": {
+    ".": "./src/run-program.ts",
+    "./programs": "./programs/index.json",
+    "./tools-registry": "./tools/ghostget.tools.json",
+    "./metrics": "./bench/report/bench-report.json"
+  },
+  "files": [
+    "bin",
+    "src",
+    "tools",
+    "programs",
+    "skills",
+    "fixtures",
+    "bench/report",
+    "docs",
+    "README.md",
+    "LICENSE",
+    "AGENTS.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test tests/",
+    "check": "bun scripts/check.ts",
+    "bench": "bun bench/run-bench.ts",
+    "prepublishOnly": "bun scripts/check.ts"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "dependencies": {
+    "@hraness/algal": "github:hraness/algal#fcea4923fddaaaecfe4dc1468645b95e20205fc8",
+    "@hraness/ghostget": "github:hraness/ghostget#8220fbdbd1335a8c5e81bb8ded25ae57c76c80f6"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "typescript": "^5.6.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "ghostget",
+    "algal",
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "devin",
+    "provider-contracts",
+    "social-stats"
+  ],
+  "os": [
+    "darwin",
+    "linux"
+  ]
+}

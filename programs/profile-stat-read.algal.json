@@ -1,0 +1,145 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:profile-stat-read",
+  "name": "Profile stat read",
+  "note": "One plan read with Ghostget's own retry policy as structure: a repeat cell runs at most two attempts and stops as soon as the attempt is settled; only a retry-once-after-60s disposition earns the second round. The final attempt is normalised into exact metrics, categorical gaps, and an escalation kind.",
+  "budgets": {
+    "maxSteps": 48,
+    "maxAgentCalls": 0,
+    "maxWork": 400000
+  },
+  "interface": {
+    "inputs": {
+      "read": {
+        "cell": "src",
+        "port": "read"
+      }
+    },
+    "outputs": {
+      "result": {
+        "cell": "normalize",
+        "port": "result"
+      }
+    }
+  },
+  "cells": [
+    {
+      "id": "src",
+      "kind": "input",
+      "outputs": {
+        "read": "json"
+      }
+    },
+    {
+      "id": "delay",
+      "kind": "expr",
+      "inputs": {
+        "read": "json"
+      },
+      "expr": {
+        "contract": "algal.expr.v1",
+        "program": [
+          "get",
+          "read",
+          "requiredDelayBeforeMs"
+        ]
+      },
+      "output": {
+        "kind": "json",
+        "schema": {}
+      }
+    },
+    {
+      "id": "first-attempt",
+      "kind": "const",
+      "outputs": {
+        "n": {
+          "type": "json",
+          "value": 1
+        }
+      }
+    },
+    {
+      "id": "attempts",
+      "kind": "repeat",
+      "manifest": "sha256:4d5dda164a96861de6e0fcb186143d36f7eee7b4fed04a366c6e9d49ac307ea0",
+      "maxRounds": 2,
+      "carry": {
+        "next-delay": "delay-ms",
+        "next-attempt-no": "attempt-no"
+      },
+      "until": {
+        "output": "attempt",
+        "field": "next",
+        "equals": "stop"
+      }
+    },
+    {
+      "id": "normalize",
+      "kind": "fn",
+      "fn": "ghostget.profile-stat.normalize.v1"
+    }
+  ],
+  "edges": [
+    {
+      "from": {
+        "cell": "src",
+        "port": "read"
+      },
+      "to": {
+        "cell": "delay",
+        "port": "read"
+      }
+    },
+    {
+      "from": {
+        "cell": "src",
+        "port": "read"
+      },
+      "to": {
+        "cell": "attempts",
+        "port": "read"
+      }
+    },
+    {
+      "from": {
+        "cell": "delay",
+        "port": "out"
+      },
+      "to": {
+        "cell": "attempts",
+        "port": "delay-ms"
+      }
+    },
+    {
+      "from": {
+        "cell": "first-attempt",
+        "port": "n"
+      },
+      "to": {
+        "cell": "attempts",
+        "port": "attempt-no"
+      }
+    },
+    {
+      "from": {
+        "cell": "src",
+        "port": "read"
+      },
+      "to": {
+        "cell": "normalize",
+        "port": "read"
+      }
+    },
+    {
+      "from": {
+        "cell": "attempts",
+        "port": "attempt"
+      },
+      "to": {
+        "cell": "normalize",
+        "port": "attempt"
+      }
+    }
+  ]
+}

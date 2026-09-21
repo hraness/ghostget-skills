@@ -1,0 +1,352 @@
+{
+ "package": "ghostget-skills",
+ "generated_at": "2026-09-21",
+ "source_fingerprint": "sha256:e78a8188c320bb55710018ffcb0f7d4c846dcdcb860c25862b5c46936bbd4868",
+ "methodology": {
+  "baseline": "bytes of the raw Ghostget JSON/text an agent would read by hand for the same job, from the recorded fixtures (plus the skill reference where the agent must re-plan a sequence)",
+  "program": "bytes of the interface outputs a consumer reads (audit-only echoes such as the full check document and the memory slot are excluded)",
+  "tokens": "est = ceil(bytes/4); a labelled estimate, not provider usage",
+  "caveats": [
+   "Fixtures are synthetic and small; live catalog and doctor documents are far larger, so live reductions for capability-survey and auth-health exceed the fixture figures.",
+   "Byte reduction is not a task-success, latency, or billing claim.",
+   "page-read only wins above its byte cap."
+  ]
+ },
+ "totals": {
+  "baseline_context_bytes": 94122,
+  "program_context_bytes": 12633,
+  "context_reduction_pct": 86.6,
+  "agent_calls": 0
+ },
+ "workflows": [
+  {
+   "id": "capability-survey",
+   "program": "capability-survey",
+   "scenario": "clean",
+   "outcome": "complete",
+   "baseline_context_bytes": 4144,
+   "baseline_items": [
+    {
+     "label": "contracts catalog --json (fixture, 4 adapters)",
+     "bytes": 4144
+    }
+   ],
+   "program_context_bytes": 1135,
+   "consumer_outputs": [
+    "survey",
+    "summary"
+   ],
+   "context_reduction_pct": 72.6,
+   "est_baseline_tokens": 1036,
+   "est_program_tokens": 284,
+   "agent_calls": 0,
+   "steps": 3,
+   "work_units": 4826,
+   "effects": 1,
+   "assumptions": [
+    "The fixture catalog has 4 adapters; the real installed catalog on a developer Mac measured 423,883 bytes from `ghostget capabilities --json` (23 adapters) on 2026-09-21, so the live reduction is larger than the fixture shows."
+   ]
+  },
+  {
+   "id": "plan-check",
+   "program": "plan-check",
+   "scenario": "gaps-and-retry",
+   "outcome": "complete",
+   "baseline_context_bytes": 4478,
+   "baseline_items": [
+    {
+     "label": "contracts check --json",
+     "bytes": 4478
+    }
+   ],
+   "program_context_bytes": 607,
+   "consumer_outputs": [
+    "summary",
+    "text"
+   ],
+   "context_reduction_pct": 86.4,
+   "est_baseline_tokens": 1120,
+   "est_program_tokens": 152,
+   "agent_calls": 0,
+   "steps": 3,
+   "work_units": 5081,
+   "effects": 1,
+   "assumptions": []
+  },
+  {
+   "id": "profile-stats",
+   "program": "profile-stats",
+   "scenario": "clean",
+   "outcome": "complete",
+   "baseline_context_bytes": 39389,
+   "baseline_items": [
+    {
+     "label": "social-profile-stats.md reference (re-read to plan the sequence)",
+     "bytes": 9601
+    },
+    {
+     "label": "contracts check --json",
+     "bytes": 4660
+    },
+    {
+     "label": "invoke x-web profiles.read --json",
+     "bytes": 1616
+    },
+    {
+     "label": "invoke x-web profiles.read --json",
+     "bytes": 1618
+    },
+    {
+     "label": "invoke linkedin-web profiles.read --json",
+     "bytes": 1692
+    },
+    {
+     "label": "invoke linkedin-web organizations.read --json",
+     "bytes": 1625
+    },
+    {
+     "label": "invoke youtube-web profiles.read --json",
+     "bytes": 1729
+    },
+    {
+     "label": "invoke twitch-web profiles.read --json",
+     "bytes": 1572
+    },
+    {
+     "label": "invoke bluesky-web profiles.read --json",
+     "bytes": 1773
+    },
+    {
+     "label": "invoke instagram-web profiles.read --json",
+     "bytes": 1738
+    },
+    {
+     "label": "invoke threads-web profiles.read --json",
+     "bytes": 1634
+    },
+    {
+     "label": "invoke substack-web profiles.read --json",
+     "bytes": 1567
+    },
+    {
+     "label": "invoke substack-web organizations.read --json",
+     "bytes": 1677
+    },
+    {
+     "label": "invoke github-web profiles.read --json",
+     "bytes": 1759
+    },
+    {
+     "label": "invoke github-web organizations.read --json",
+     "bytes": 1671
+    },
+    {
+     "label": "invoke tiktok-web profiles.read --json",
+     "bytes": 1723
+    },
+    {
+     "label": "invoke reddit-web profiles.read --json",
+     "bytes": 1734
+    }
+   ],
+   "program_context_bytes": 2137,
+   "consumer_outputs": [
+    "run",
+    "gaps",
+    "escalations",
+    "summary"
+   ],
+   "context_reduction_pct": 94.6,
+   "est_baseline_tokens": 9848,
+   "est_program_tokens": 535,
+   "agent_calls": 0,
+   "steps": 204,
+   "work_units": 75708,
+   "effects": 31,
+   "assumptions": [
+    "Baseline assumes the agent reads each invoke envelope once and the reference once per run; it does not count retry re-planning or the agent's own reasoning tokens."
+   ]
+  },
+  {
+   "id": "profile-stats-with-retry",
+   "program": "profile-stats",
+   "scenario": "gaps-and-retry",
+   "outcome": "complete",
+   "baseline_context_bytes": 35637,
+   "baseline_items": [
+    {
+     "label": "social-profile-stats.md reference",
+     "bytes": 9601
+    },
+    {
+     "label": "contracts check --json",
+     "bytes": 4478
+    },
+    {
+     "label": "invoke x-web profiles.read --json",
+     "bytes": 1616
+    },
+    {
+     "label": "invoke x-web profiles.read --json",
+     "bytes": 1011
+    },
+    {
+     "label": "invoke youtube-web profiles.read --json",
+     "bytes": 1729
+    },
+    {
+     "label": "invoke twitch-web profiles.read --json",
+     "bytes": 1572
+    },
+    {
+     "label": "invoke bluesky-web profiles.read --json",
+     "bytes": 1773
+    },
+    {
+     "label": "invoke instagram-web profiles.read --json (attempt 1)",
+     "bytes": 1042
+    },
+    {
+     "label": "invoke instagram-web profiles.read --json (attempt 2)",
+     "bytes": 1738
+    },
+    {
+     "label": "invoke threads-web profiles.read --json",
+     "bytes": 1634
+    },
+    {
+     "label": "invoke substack-web profiles.read --json",
+     "bytes": 1567
+    },
+    {
+     "label": "invoke substack-web organizations.read --json",
+     "bytes": 1677
+    },
+    {
+     "label": "invoke github-web profiles.read --json",
+     "bytes": 1759
+    },
+    {
+     "label": "invoke github-web organizations.read --json",
+     "bytes": 1671
+    },
+    {
+     "label": "invoke tiktok-web profiles.read --json",
+     "bytes": 1035
+    },
+    {
+     "label": "invoke reddit-web profiles.read --json",
+     "bytes": 1734
+    }
+   ],
+   "program_context_bytes": 3788,
+   "consumer_outputs": [
+    "run",
+    "gaps",
+    "escalations",
+    "summary"
+   ],
+   "context_reduction_pct": 89.4,
+   "est_baseline_tokens": 8910,
+   "est_program_tokens": 947,
+   "agent_calls": 0,
+   "steps": 194,
+   "work_units": 72485,
+   "effects": 31,
+   "assumptions": [
+    "Same as profile-stats; the retried read counts both envelopes."
+   ]
+  },
+  {
+   "id": "page-read",
+   "program": "page-read",
+   "scenario": "clean",
+   "outcome": "complete",
+   "baseline_context_bytes": 345,
+   "baseline_items": [
+    {
+     "label": "ghostget read (text)",
+     "bytes": 345
+    }
+   ],
+   "program_context_bytes": 234,
+   "consumer_outputs": [
+    "text"
+   ],
+   "context_reduction_pct": 32.2,
+   "est_baseline_tokens": 87,
+   "est_program_tokens": 59,
+   "agent_calls": 0,
+   "steps": 3,
+   "work_units": 1994,
+   "effects": 1,
+   "assumptions": [
+    "example.com is tiny; page-read only wins on pages above the byte cap, and can measure negative on small pages."
+   ]
+  },
+  {
+   "id": "auth-health",
+   "program": "auth-health",
+   "scenario": "clean",
+   "outcome": "complete",
+   "baseline_context_bytes": 1833,
+   "baseline_items": [
+    {
+     "label": "doctor --json",
+     "bytes": 1265
+    },
+    {
+     "label": "auth list --json",
+     "bytes": 568
+    }
+   ],
+   "program_context_bytes": 555,
+   "consumer_outputs": [
+    "health",
+    "summary"
+   ],
+   "context_reduction_pct": 69.7,
+   "est_baseline_tokens": 459,
+   "est_program_tokens": 139,
+   "agent_calls": 0,
+   "steps": 3,
+   "work_units": 2044,
+   "effects": 2,
+   "assumptions": [
+    "The fixture doctor document is small; the real `ghostget doctor --json` measured 245,286 bytes on 2026-09-21."
+   ]
+  },
+  {
+   "id": "drift-watch",
+   "program": "drift-watch",
+   "scenario": "drift",
+   "outcome": "complete",
+   "baseline_context_bytes": 8296,
+   "baseline_items": [
+    {
+     "label": "contracts catalog --json (now)",
+     "bytes": 4152
+    },
+    {
+     "label": "contracts catalog --json (baseline, re-read)",
+     "bytes": 4144
+    }
+   ],
+   "program_context_bytes": 4177,
+   "consumer_outputs": [
+    "drift",
+    "summary"
+   ],
+   "context_reduction_pct": 49.7,
+   "est_baseline_tokens": 2074,
+   "est_program_tokens": 1045,
+   "agent_calls": 0,
+   "steps": 5,
+   "work_units": 6961,
+   "effects": 1,
+   "assumptions": [
+    "Baseline assumes the agent compares two catalog dumps by reading both."
+   ]
+  }
+ ]
+}

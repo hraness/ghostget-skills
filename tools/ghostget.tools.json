@@ -1,0 +1,72 @@
+{
+  "ghostget.contracts.catalog.v1": {
+    "signature": {
+      "inputs": { "request": { "type": "json" } },
+      "outputs": { "report": { "type": "json" } },
+      "effect": "read",
+      "cost": 200,
+      "maxOutputBytes": 262144
+    },
+    "exec": "cmd:bun __PKG__/tools/tool.ts ghostget.contracts.catalog.v1"
+  },
+  "ghostget.contracts.check.v1": {
+    "signature": {
+      "inputs": { "plan": { "type": "json" }, "auth-state": { "type": "json", "optional": true } },
+      "outputs": { "report": { "type": "json" } },
+      "effect": "read",
+      "cost": 200,
+      "maxOutputBytes": 131072
+    },
+    "exec": "cmd:bun __PKG__/tools/tool.ts ghostget.contracts.check.v1"
+  },
+  "ghostget.invoke.read.v1": {
+    "signature": {
+      "inputs": { "read": { "type": "json" } },
+      "outputs": { "report": { "type": "json" } },
+      "effect": "read",
+      "cost": 2000,
+      "maxOutputBytes": 131072
+    },
+    "exec": "cmd:bun __PKG__/tools/tool.ts ghostget.invoke.read.v1"
+  },
+  "ghostget.page.read.v1": {
+    "signature": {
+      "inputs": { "url": { "type": "text" }, "max-bytes": { "type": "json", "optional": true } },
+      "outputs": { "report": { "type": "json" } },
+      "effect": "read",
+      "cost": 1000,
+      "maxOutputBytes": 262144
+    },
+    "exec": "cmd:bun __PKG__/tools/tool.ts ghostget.page.read.v1"
+  },
+  "ghostget.doctor.v1": {
+    "signature": {
+      "inputs": {},
+      "outputs": { "report": { "type": "json" } },
+      "effect": "read",
+      "cost": 500,
+      "maxOutputBytes": 32768
+    },
+    "exec": "cmd:bun __PKG__/tools/tool.ts ghostget.doctor.v1"
+  },
+  "ghostget.auth.list.v1": {
+    "signature": {
+      "inputs": {},
+      "outputs": { "report": { "type": "json" } },
+      "effect": "read",
+      "cost": 100,
+      "maxOutputBytes": 65536
+    },
+    "exec": "cmd:bun __PKG__/tools/tool.ts ghostget.auth.list.v1"
+  },
+  "time.wait.v1": {
+    "signature": {
+      "inputs": { "ms": { "type": "json" } },
+      "outputs": { "report": { "type": "json" } },
+      "effect": "read",
+      "cost": 10,
+      "maxOutputBytes": 1024
+    },
+    "exec": "cmd:bun __PKG__/tools/tool.ts time.wait.v1"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:plan-check",
+  "name": "Plan check",
+  "note": "Check a ghostget.collection-plan.v1 document against the installed contract catalog without touching a provider: every read gets an ok verdict with its binding or one closed gap reason. Zero model calls.",
+  "budgets": { "maxSteps": 8, "maxAgentCalls": 0, "maxWork": 1000000 },
+  "interface": {
+    "inputs": {
+      "plan": { "cell": "src", "port": "plan" },
+      "auth-state": { "cell": "src", "port": "auth-state" }
+    },
+    "outputs": {
+      "check": { "cell": "check", "port": "report" },
+      "summary": { "cell": "summary", "port": "summary" },
+      "text": { "cell": "summary", "port": "text" }
+    }
+  },
+  "cells": [
+    { "id": "src", "kind": "input", "outputs": { "plan": "json", "auth-state": { "type": "json", "optional": true } } },
+    { "id": "check", "kind": "tool", "tool": "ghostget.contracts.check.v1", "budget": { "maxEffectMs": 180000 } },
+    { "id": "summary", "kind": "fn", "fn": "ghostget.check.summary.v1" }
+  ],
+  "edges": [
+    { "from": { "cell": "src", "port": "plan" }, "to": { "cell": "check", "port": "plan" } },
+    { "from": { "cell": "src", "port": "auth-state" }, "to": { "cell": "check", "port": "auth-state" } },
+    { "from": { "cell": "check", "port": "report" }, "to": { "cell": "summary", "port": "report" } }
+  ]
+}

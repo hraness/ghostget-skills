@@ -1,0 +1,247 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:profile-stat-attempt",
+  "name": "Profile stat attempt",
+  "note": "One bounded attempt at a plan read: wait the required delay, invoke the R1 operation once through Ghostget, then decide stop or retry from the closed readFailure disposition. Round 0 waits the plan's requiredDelayBeforeMs; a retry round carries the fixed 60 s delay.",
+  "budgets": {
+    "maxSteps": 16,
+    "maxAgentCalls": 0,
+    "maxWork": 100000
+  },
+  "interface": {
+    "inputs": {
+      "read": {
+        "cell": "src",
+        "port": "read"
+      },
+      "delay-ms": {
+        "cell": "src",
+        "port": "delay-ms"
+      },
+      "attempt-no": {
+        "cell": "src",
+        "port": "attempt-no"
+      }
+    },
+    "outputs": {
+      "attempt": {
+        "cell": "settle",
+        "port": "value"
+      },
+      "next-delay": {
+        "cell": "retry-delay",
+        "port": "ms"
+      },
+      "next-attempt-no": {
+        "cell": "next-no",
+        "port": "out"
+      }
+    }
+  },
+  "cells": [
+    {
+      "id": "src",
+      "kind": "input",
+      "outputs": {
+        "read": "json",
+        "delay-ms": "json",
+        "attempt-no": "json"
+      }
+    },
+    {
+      "id": "wait",
+      "kind": "tool",
+      "tool": "time.wait.v1",
+      "budget": {
+        "maxEffectMs": 130000
+      }
+    },
+    {
+      "id": "after-wait",
+      "kind": "expr",
+      "inputs": {
+        "read": "json",
+        "waited": "json"
+      },
+      "expr": {
+        "contract": "algal.expr.v1",
+        "program": [
+          "get",
+          "read"
+        ]
+      },
+      "output": {
+        "kind": "json",
+        "schema": {}
+      }
+    },
+    {
+      "id": "invoke",
+      "kind": "tool",
+      "tool": "ghostget.invoke.read.v1",
+      "budget": {
+        "maxEffectMs": 180000
+      }
+    },
+    {
+      "id": "decide",
+      "kind": "fn",
+      "fn": "ghostget.profile-stat.attempt.v1"
+    },
+    {
+      "id": "next-no",
+      "kind": "expr",
+      "inputs": {
+        "n": "json"
+      },
+      "expr": {
+        "contract": "algal.expr.v1",
+        "program": [
+          "add",
+          [
+            "get",
+            "n"
+          ],
+          1
+        ]
+      },
+      "output": {
+        "kind": "json",
+        "schema": {}
+      }
+    },
+    {
+      "id": "decide-failed",
+      "kind": "fn",
+      "fn": "ghostget.profile-stat.attempt.v1"
+    },
+    {
+      "id": "settle",
+      "kind": "fn",
+      "fn": "coalesce.v1"
+    },
+    {
+      "id": "retry-delay",
+      "kind": "const",
+      "outputs": {
+        "ms": {
+          "type": "json",
+          "value": 60000
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": {
+        "cell": "src",
+        "port": "delay-ms"
+      },
+      "to": {
+        "cell": "wait",
+        "port": "ms"
+      }
+    },
+    {
+      "from": {
+        "cell": "src",
+        "port": "attempt-no"
+      },
+      "to": {
+        "cell": "next-no",
+        "port": "n"
+      }
+    },
+    {
+      "from": {
+        "cell": "src",
+        "port": "read"
+      },
+      "to": {
+        "cell": "after-wait",
+        "port": "read"
+      }
+    },
+    {
+      "from": {
+        "cell": "wait",
+        "port": "report"
+      },
+      "to": {
+        "cell": "after-wait",
+        "port": "waited"
+      }
+    },
+    {
+      "from": {
+        "cell": "after-wait",
+        "port": "out"
+      },
+      "to": {
+        "cell": "invoke",
+        "port": "read"
+      }
+    },
+    {
+      "from": {
+        "cell": "invoke",
+        "port": "report"
+      },
+      "to": {
+        "cell": "decide",
+        "port": "report"
+      }
+    },
+    {
+      "from": {
+        "cell": "invoke",
+        "port": "report"
+      },
+      "to": {
+        "cell": "decide-failed",
+        "port": "report"
+      },
+      "on": "fail"
+    },
+    {
+      "from": {
+        "cell": "decide",
+        "port": "attempt"
+      },
+      "to": {
+        "cell": "settle",
+        "port": "a"
+      }
+    },
+    {
+      "from": {
+        "cell": "decide-failed",
+        "port": "attempt"
+      },
+      "to": {
+        "cell": "settle",
+        "port": "b"
+      }
+    },
+    {
+      "from": {
+        "cell": "src",
+        "port": "attempt-no"
+      },
+      "to": {
+        "cell": "decide",
+        "port": "attempt-no"
+      }
+    },
+    {
+      "from": {
+        "cell": "src",
+        "port": "attempt-no"
+      },
+      "to": {
+        "cell": "decide-failed",
+        "port": "attempt-no"
+      }
+    }
+  ]
+}

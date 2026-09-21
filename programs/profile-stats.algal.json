@@ -1,0 +1,65 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:profile-stats",
+  "name": "Profile stats",
+  "note": "Scheduled exact social-profile statistics from a ghostget.collection-plan.v1 document. The plan is checked against the installed Ghostget contract catalog first; only reads that pass run, sequentially and in plan order, each through the bounded profile-stat-read organism. Results aggregate into a consumer run, categorical gaps, escalations by kind, and a durable last-good memory slot. Zero model calls.",
+  "budgets": { "maxSteps": 1024, "maxAgentCalls": 0, "maxWork": 20000000, "maxDepth": 4 },
+  "interface": {
+    "inputs": {
+      "plan": { "cell": "src", "port": "plan" },
+      "scheduled-date": { "cell": "src", "port": "scheduled-date" },
+      "timezone": { "cell": "src", "port": "timezone" },
+      "auth-state": { "cell": "src", "port": "auth-state" }
+    },
+    "outputs": {
+      "run": { "cell": "aggregate", "port": "run" },
+      "gaps": { "cell": "aggregate", "port": "gaps" },
+      "escalations": { "cell": "aggregate", "port": "escalations" },
+      "last-good": { "cell": "remember", "port": "data" },
+      "summary": { "cell": "aggregate", "port": "summary" },
+      "check": { "cell": "check", "port": "report" }
+    }
+  },
+  "cells": [
+    {
+      "id": "src",
+      "kind": "input",
+      "outputs": {
+        "plan": "json",
+        "scheduled-date": "json",
+        "timezone": { "type": "json", "optional": true },
+        "auth-state": { "type": "json", "optional": true }
+      }
+    },
+    { "id": "check", "kind": "tool", "tool": "ghostget.contracts.check.v1", "budget": { "maxEffectMs": 180000 } },
+    { "id": "rows", "kind": "fn", "fn": "ghostget.plan.rows.v1" },
+    {
+      "id": "collect",
+      "kind": "each",
+      "manifest": "sha256:ed60fe10782ff4847f84d2d264972f4fc3f201bc805f84d7debc009c1dee47ce",
+      "over": "read",
+      "maxItems": 64
+    },
+    { "id": "memory", "kind": "slot", "name": "profile-stats-last-good", "mode": "read", "default": {} },
+    { "id": "timezone-default", "kind": "const", "outputs": { "v": { "type": "json", "value": "America/New_York" } } },
+    { "id": "timezone", "kind": "fn", "fn": "coalesce.v1" },
+    { "id": "aggregate", "kind": "fn", "fn": "ghostget.profile-stats.aggregate.v1" },
+    { "id": "remember", "kind": "slot", "name": "profile-stats-last-good", "mode": "write" }
+  ],
+  "edges": [
+    { "from": { "cell": "src", "port": "plan" }, "to": { "cell": "check", "port": "plan" } },
+    { "from": { "cell": "src", "port": "auth-state" }, "to": { "cell": "check", "port": "auth-state" } },
+    { "from": { "cell": "src", "port": "plan" }, "to": { "cell": "rows", "port": "plan" } },
+    { "from": { "cell": "check", "port": "report" }, "to": { "cell": "rows", "port": "check" } },
+    { "from": { "cell": "rows", "port": "rows" }, "to": { "cell": "collect", "port": "read" } },
+    { "from": { "cell": "src", "port": "timezone" }, "to": { "cell": "timezone", "port": "a" } },
+    { "from": { "cell": "timezone-default", "port": "v" }, "to": { "cell": "timezone", "port": "b" } },
+    { "from": { "cell": "src", "port": "plan" }, "to": { "cell": "aggregate", "port": "plan" } },
+    { "from": { "cell": "collect", "port": "result" }, "to": { "cell": "aggregate", "port": "results" } },
+    { "from": { "cell": "rows", "port": "gaps" }, "to": { "cell": "aggregate", "port": "plan-gaps" } },
+    { "from": { "cell": "src", "port": "scheduled-date" }, "to": { "cell": "aggregate", "port": "scheduled-date" } },
+    { "from": { "cell": "timezone", "port": "value" }, "to": { "cell": "aggregate", "port": "timezone" } },
+    { "from": { "cell": "memory", "port": "data" }, "to": { "cell": "aggregate", "port": "last-good" } },
+    { "from": { "cell": "aggregate", "port": "last-good" }, "to": { "cell": "remember", "port": "data" } }
+  ]
+}

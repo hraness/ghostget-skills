@@ -1,0 +1,23 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:capability-survey",
+  "name": "Capability survey",
+  "note": "The installed Ghostget contract catalog reduced to what an agent needs before planning: per-adapter observed and capture-required operations, and the list of R1 reads with their authority and input keys. Replaces reading the full capabilities dump. Zero model calls.",
+  "budgets": { "maxSteps": 8, "maxAgentCalls": 0, "maxWork": 2000000 },
+  "interface": {
+    "inputs": { "request": { "cell": "src", "port": "request" } },
+    "outputs": {
+      "survey": { "cell": "survey", "port": "survey" },
+      "summary": { "cell": "survey", "port": "summary" }
+    }
+  },
+  "cells": [
+    { "id": "src", "kind": "input", "outputs": { "request": "json" } },
+    { "id": "catalog", "kind": "tool", "tool": "ghostget.contracts.catalog.v1", "budget": { "maxEffectMs": 180000 } },
+    { "id": "survey", "kind": "fn", "fn": "ghostget.catalog.survey.v1" }
+  ],
+  "edges": [
+    { "from": { "cell": "src", "port": "request" }, "to": { "cell": "catalog", "port": "request" } },
+    { "from": { "cell": "catalog", "port": "report" }, "to": { "cell": "survey", "port": "report" } }
+  ]
+}

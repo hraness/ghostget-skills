@@ -1,0 +1,23 @@
+{
+  "contract": "algal.organism.v1",
+  "key": "organism:auth-health",
+  "name": "Auth health",
+  "note": "Ghostget doctor plus the auth locator list reduced to a readiness report: transport readiness, locator counts by kind, unsettled runs, and pending recovery counters. No subjects, fingerprints, or paths. Zero model calls.",
+  "budgets": { "maxSteps": 8, "maxAgentCalls": 0, "maxWork": 1000000 },
+  "interface": {
+    "inputs": {},
+    "outputs": {
+      "health": { "cell": "health", "port": "health" },
+      "summary": { "cell": "health", "port": "summary" }
+    }
+  },
+  "cells": [
+    { "id": "doctor", "kind": "tool", "tool": "ghostget.doctor.v1", "budget": { "maxEffectMs": 320000 } },
+    { "id": "auth", "kind": "tool", "tool": "ghostget.auth.list.v1", "budget": { "maxEffectMs": 180000 } },
+    { "id": "health", "kind": "fn", "fn": "ghostget.auth.health.v1" }
+  ],
+  "edges": [
+    { "from": { "cell": "doctor", "port": "report" }, "to": { "cell": "health", "port": "doctor" } },
+    { "from": { "cell": "auth", "port": "report" }, "to": { "cell": "health", "port": "auth" } }
+  ]
+}
