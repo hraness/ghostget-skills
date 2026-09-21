@@ -17,7 +17,7 @@ run is a receipt that replays bit-for-bit without touching a provider.
 ## Install
 
 Requires Bun 1.3+ on macOS or Linux and a Ghostget with the `contracts`
-commands (0.18.23 or later; the package pins one).
+commands (0.18.24 or later; the package pins one).
 
 ```sh
 bun add --global github:hraness/ghostget-skills
@@ -104,10 +104,24 @@ read by hand against the outputs a consumer reads, on deterministic fixtures:
 | **total** | **94,122** | **12,633** | **86.6%** |
 
 These are byte figures over synthetic fixtures with `est_tokens =
-ceil(bytes/4)`, not provider usage or task-success claims. The real installed
-catalog measured 423,883 bytes and the real doctor document 245,286 bytes on
-one developer Mac, so live reductions for the survey, drift, and health
-programs are larger than the fixture rows. [Methodology and caveats](docs/METRICS.md).
+ceil(bytes/4)`, not provider usage or task-success claims.
+
+One live measurement, taken on 2026-09-21 against a real installed catalog of
+23 adapters through a development Ghostget build carrying the contracts
+surface:
+
+| surface | bytes |
+| --- | ---: |
+| `ghostget contracts catalog --json` | 437,812 |
+| `capability-survey` consumer outputs | 22,245 |
+
+That is a 94.9% reduction on the same catalog, and the program reports the
+same facts: 23 adapters, 157 observed operations, 95 of them R1 reads, and 188
+capture-required. The pre-contracts surface an agent would otherwise read,
+`ghostget capabilities --json`, measured 647,839 bytes on the same machine
+against its own installed state. Live figures move with the installed catalog;
+only the fixture rows above are reproducible offline.
+[Methodology and caveats](docs/METRICS.md).
 
 ## What healing means here
 

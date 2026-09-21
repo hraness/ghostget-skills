@@ -26,11 +26,15 @@ report is stale.
 
 ## Caveats
 
-- Fixtures are small. The real installed catalog measured 423,883 bytes from
-  `ghostget capabilities --json` and the real doctor document 245,286 bytes on
-  one developer Mac on 2026-09-21; the fixture versions are a few kilobytes.
-  Live reductions for `capability-survey`, `drift-watch`, and `auth-health`
-  are therefore larger than the fixture figures.
+- Fixtures are small; live documents are not. On 2026-09-21, against a real
+  installed catalog of 23 adapters, `ghostget contracts catalog --json`
+  measured 437,812 bytes and `capability-survey` reduced it to 22,245 bytes of
+  consumer output, a 94.9% reduction. The pre-contracts `ghostget capabilities
+  --json` surface measured 647,839 bytes and the doctor document 245,286 bytes
+  on the same machine. Live reductions for `capability-survey`, `drift-watch`,
+  and `auth-health` are therefore larger than the fixture figures. A live
+  measurement depends on the installed catalog and is not reproducible
+  offline, so it is reported separately and never folded into the totals.
 - Baselines count evidence bytes only, not the agent's reasoning, retries,
   or the prose it re-reads more than once.
 - `page-read` only wins above its byte cap; on tiny pages it can cost more.
