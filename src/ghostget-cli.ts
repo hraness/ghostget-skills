@@ -12,12 +12,33 @@
 
 import { spawn } from "node:child_process";
 import { existsSync, realpathSync } from "node:fs";
-import { isAbsolute, join, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 
 export const PKG = resolve(new URL("..", import.meta.url).pathname);
 
-/** The only executable this package runs by default. */
+/** The pinned executable inside a development checkout. */
 export const PINNED_GHOSTGET_EXECUTABLE = join(PKG, "node_modules", ".bin", "ghostget");
+
+/**
+ * Candidate paths for the pinned Ghostget binary, nearest first. A package
+ * manager may nest the dependency under this package (a development checkout)
+ * or hoist it beside it (an ordinary consumer install), so resolution walks up
+ * the same way Node does instead of assuming one layout.
+ */
+export function pinnedGhostgetCandidates(packageRoot = PKG): readonly string[] {
+  const candidates = [join(packageRoot, "node_modules", ".bin", "ghostget")];
+  let directory = packageRoot;
+  while (true) {
+    if (basename(directory) === "node_modules") {
+      candidates.push(join(directory, ".bin", "ghostget"));
+    }
+    const parent = dirname(directory);
+    if (parent === directory) break;
+    directory = parent;
+    candidates.push(join(directory, "node_modules", ".bin", "ghostget"));
+  }
+  return Object.freeze([...new Set(candidates)]);
+}
 
 // Fixed profile reads may use their full 60 s provider deadline, and Ghostget
 // then reserves 30 s to join registered cleanup. Keep the outer deadline beyond
@@ -78,6 +99,7 @@ export function redactDiagnostic(text: string): string {
  */
 export function resolveGhostgetExecutable(
   environment: Readonly<Record<string, string | undefined>> = process.env,
+  packageRoot = PKG,
 ): string {
   const override = environment.GHOSTGET_BIN?.trim();
   if (override) {
@@ -85,10 +107,29 @@ export function resolveGhostgetExecutable(
     if (!existsSync(override)) throw new Error("GHOSTGET_BIN does not exist");
     return realpathSync(override);
   }
-  if (!existsSync(PINNED_GHOSTGET_EXECUTABLE)) {
-    throw new Error("pinned Ghostget executable is missing; run bun install in ghostget-skills");
+  for (const candidate of pinnedGhostgetCandidates(packageRoot)) {
+    if (existsSync(candidate)) return realpathSync(candidate);
   }
-  return realpathSync(PINNED_GHOSTGET_EXECUTABLE);
+  throw new Error(
+    "pinned Ghostget executable is missing; install ghostget-skills with its dependencies or set GHOSTGET_BIN to an absolute Ghostget path",
+  );
+}
+
+/** Resolve an installed package manifest the same way, nearest first. */
+export function resolvePackageManifest(name: string, packageRoot = PKG): string | null {
+  let directory = packageRoot;
+  const seen = new Set<string>();
+  while (true) {
+    for (const base of [join(directory, "node_modules"), basename(directory) === "node_modules" ? directory : ""]) {
+      if (base === "" || seen.has(base)) continue;
+      seen.add(base);
+      const candidate = join(base, ...name.split("/"), "package.json");
+      if (existsSync(candidate)) return candidate;
+    }
+    const parent = dirname(directory);
+    if (parent === directory) return null;
+    directory = parent;
+  }
 }
 
 /** Parse the first complete JSON document from a stdout buffer. */

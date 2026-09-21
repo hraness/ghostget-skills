@@ -29,7 +29,7 @@ import {
   runProgram,
   verifyRun,
 } from "../src/run-program.ts";
-import { resolveGhostgetExecutable } from "../src/ghostget-cli.ts";
+import { resolveGhostgetExecutable, resolvePackageManifest } from "../src/ghostget-cli.ts";
 
 const SKILLS = join(PKG, "skills");
 
@@ -178,26 +178,28 @@ async function verify(rest: string[]): Promise<number> {
 
 async function doctor(): Promise<number> {
   const report: Record<string, unknown> = { package: "ghostget-skills" };
+  let executable: string | null = null;
   try {
-    const executable = resolveGhostgetExecutable();
+    executable = resolveGhostgetExecutable();
     report.ghostget = { resolved: true, source: process.env.GHOSTGET_BIN ? "GHOSTGET_BIN" : "pinned" };
     const version = Bun.spawnSync([executable, "--version"], { stdout: "pipe", stderr: "pipe" });
     report.ghostgetVersion = version.stdout.toString().trim() || null;
   } catch (error) {
-    report.ghostget = { resolved: false, diagnostic: String(error) };
+    report.ghostget = { resolved: false, diagnostic: String(error).replace(/\/(?:Users|home)\/[^\s"']+/gu, "<path>") };
+    report.ghostgetVersion = null;
   }
-  const packageManifest = JSON.parse(await readFile(join(PKG, "node_modules", "@hraness", "ghostget", "package.json"), "utf8").catch(() => "{}")) as { version?: string };
-  report.pinnedGhostgetPackage = packageManifest.version ?? null;
-  const algal = JSON.parse(await readFile(join(PKG, "node_modules", "@hraness", "algal", "package.json"), "utf8").catch(() => "{}")) as { version?: string };
-  report.algalVersion = algal.version ?? null;
+  // Dependencies may be nested or hoisted; resolve both manifests the same way.
+  for (const [key, name] of [["pinnedGhostgetPackage", "@hraness/ghostget"], ["algalVersion", "@hraness/algal"]] as const) {
+    const manifestPath = resolvePackageManifest(name);
+    report[key] = manifestPath === null
+      ? null
+      : (JSON.parse(await readFile(manifestPath, "utf8")) as { version?: string }).version ?? null;
+  }
   report.programs = readdirSync(PROGRAMS_DIR).filter((entry) => entry.endsWith(".algal.json")).length;
-  report.contractsCommandAvailable = null;
-  try {
-    const executable = resolveGhostgetExecutable();
+  report.contractsCommandAvailable = false;
+  if (executable !== null) {
     const probe = Bun.spawnSync([executable, "contracts", "schema", "plan", "--json"], { stdout: "pipe", stderr: "pipe" });
     report.contractsCommandAvailable = probe.exitCode === 0;
-  } catch {
-    report.contractsCommandAvailable = false;
   }
   await out(`${JSON.stringify(report, null, 1)}\n`);
   return 0;

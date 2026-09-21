@@ -1,13 +1,19 @@
 // ghostget-cli boundary — deterministic, no Ghostget process.
 
 import { describe, expect, test } from "bun:test";
+import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   callKey,
   canonicalJson,
   firstJsonDocument,
+  pinnedGhostgetCandidates,
   recordedRunner,
   redactDiagnostic,
   resolveGhostgetExecutable,
+  resolvePackageManifest,
 } from "../src/ghostget-cli.ts";
 
 describe("firstJsonDocument", () => {
@@ -32,6 +38,37 @@ describe("redactDiagnostic", () => {
     expect(redacted).not.toContain("ghp_");
     expect(redacted).toContain("<path>");
     expect(redacted).toContain("<redacted>");
+  });
+});
+
+describe("dependency resolution across install layouts", () => {
+  // A package manager nests dependencies under this package in a development
+  // checkout and hoists them beside it in an ordinary consumer install.
+  const consumer = mkdtempSync(join(tmpdir(), "ghostget-skills-layout-"));
+  const root = join(consumer, "node_modules", "ghostget-skills");
+  mkdirSync(join(root, "node_modules"), { recursive: true });
+  mkdirSync(join(consumer, "node_modules", ".bin"), { recursive: true });
+  mkdirSync(join(consumer, "node_modules", "@hraness", "algal"), { recursive: true });
+  writeFileSync(join(consumer, "node_modules", ".bin", "ghostget"), "#!/bin/sh\n");
+  writeFileSync(join(consumer, "node_modules", "@hraness", "algal", "package.json"), '{"version":"9.9.9"}');
+
+  test("candidates include the nested and the hoisted layout, nearest first", () => {
+    const candidates = pinnedGhostgetCandidates(root);
+    expect(candidates[0]).toBe(join(root, "node_modules", ".bin", "ghostget"));
+    expect(candidates).toContain(join(consumer, "node_modules", ".bin", "ghostget"));
+    expect(new Set(candidates).size).toBe(candidates.length);
+  });
+  test("a hoisted binary resolves when nothing is nested", () => {
+    // Resolution returns a realpath, so compare against one.
+    expect(resolveGhostgetExecutable({}, root)).toBe(realpathSync(join(consumer, "node_modules", ".bin", "ghostget")));
+  });
+  test("a hoisted package manifest resolves", () => {
+    expect(resolvePackageManifest("@hraness/algal", root)).toBe(join(consumer, "node_modules", "@hraness", "algal", "package.json"));
+    expect(resolvePackageManifest("@hraness/not-installed", root)).toBeNull();
+  });
+  test("no candidate anywhere is an explicit, actionable failure", () => {
+    const empty = mkdtempSync(join(tmpdir(), "ghostget-skills-empty-"));
+    expect(() => resolveGhostgetExecutable({}, empty)).toThrow("set GHOSTGET_BIN");
   });
 });
 
