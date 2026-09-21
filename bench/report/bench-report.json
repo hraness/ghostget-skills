@@ -1,7 +1,7 @@
 {
  "package": "ghostget-skills",
  "generated_at": "2026-09-21",
- "source_fingerprint": "sha256:e78a8188c320bb55710018ffcb0f7d4c846dcdcb860c25862b5c46936bbd4868",
+ "source_fingerprint": "sha256:385a5b1f8fd8b4f821cb633d575d0bd5cc5e0fa1e58fc68cdfb853a50412084c",
  "methodology": {
   "baseline": "bytes of the raw Ghostget JSON/text an agent would read by hand for the same job, from the recorded fixtures (plus the skill reference where the agent must re-plan a sequence)",
   "program": "bytes of the interface outputs a consumer reads (audit-only echoes such as the full check document and the memory slot are excluded)",

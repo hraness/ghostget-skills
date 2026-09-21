@@ -162,6 +162,19 @@ describe("other programs", () => {
     expect(text).not.toContain("state-home");
     expect(outputs.summary).toContain("3 auth locators");
   });
+  test("drift-watch reports no drift when the catalog is unchanged", async () => {
+    // The baseline round-trips through the store, which canonicalises key
+    // order; a naive string compare reported every operation as drift.
+    const first = await run("drift-watch", { src: { request: {} } }, "clean");
+    expect((first.outputs.drift as { firstBaseline: boolean }).firstBaseline).toBe(true);
+    const second = await run("drift-watch", { src: { request: {} } }, "clean", first.dir);
+    const drift = second.outputs.drift as { firstBaseline: boolean; changed: unknown[]; added: unknown[]; removed: unknown[]; total: number };
+    expect(drift.firstBaseline).toBe(false);
+    expect(drift.changed).toEqual([]);
+    expect(drift.added).toEqual([]);
+    expect(drift.removed).toEqual([]);
+    expect(second.outputs.summary).toBe(`0 changed, 0 added, 0 removed of ${String(drift.total)} operations`);
+  });
   test("drift-watch records a baseline, then reports drift on a changed contract", async () => {
     const first = await run("drift-watch", { src: { request: {} } }, "clean");
     expect((first.outputs.drift as { firstBaseline: boolean }).firstBaseline).toBe(true);

@@ -9,6 +9,7 @@
 
 import { builtinRegistry } from "@hraness/algal";
 import type { FnRegistry, JsonValue } from "@hraness/algal";
+import { canonicalJson } from "./ghostget-cli.ts";
 
 type Json = JsonValue;
 type JsonRecord = { [key: string]: Json };
@@ -410,15 +411,18 @@ export function catalogDrift(inputs: Inputs): { drift: Json; baseline: Json; sum
   const changed: JsonRecord[] = [];
   const added: string[] = [];
   const removed: string[] = [];
+  // The stored baseline round-trips through the content-addressed store, which
+  // canonicalises key order. Compare canonically or every unchanged operation
+  // reads as drift on the next run.
   for (const [key, identity] of Object.entries(next)) {
     const before = previousEntries[key];
     if (before === undefined) {
       added.push(key);
       continue;
     }
-    if (JSON.stringify(before) !== JSON.stringify(identity)) {
+    if (canonicalJson(before) !== canonicalJson(identity)) {
       const fields = isRecord(before) && isRecord(identity)
-        ? Object.keys(identity).filter((field) => JSON.stringify(before[field]) !== JSON.stringify(identity[field]))
+        ? Object.keys(identity).filter((field) => canonicalJson(before[field]) !== canonicalJson(identity[field]))
         : [];
       changed.push({ operation: key, fields, before, after: identity });
     }

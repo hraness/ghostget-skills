@@ -32,6 +32,18 @@ import {
 import { resolveGhostgetExecutable } from "../src/ghostget-cli.ts";
 
 const SKILLS = join(PKG, "skills");
+
+/** Write to a stream and wait for the flush. Bun's pipe writes are async, so
+ * a large document followed by an immediate `process.exit` is truncated at the
+ * pipe buffer. Every command's output goes through these. */
+async function write(stream: NodeJS.WriteStream, text: string): Promise<void> {
+  await new Promise<void>((resolveWrite, rejectWrite) => {
+    stream.write(text, (error) => (error ? rejectWrite(error) : resolveWrite()));
+  });
+}
+
+const out = (text: string) => write(process.stdout, text);
+const err = (text: string) => write(process.stderr, text);
 const USAGE = `usage:
   ghostget-skills list
   ghostget-skills run <program> --args <json|@file> [--dir <store>] [--recorded <scenario|@file>] [--receipt] [--quiet]
@@ -89,7 +101,7 @@ async function list(): Promise<void> {
       note: manifest.note ?? "",
     });
   }
-  process.stdout.write(`${JSON.stringify({ package: "ghostget-skills", programs: rows }, null, 1)}\n`);
+  await out(`${JSON.stringify({ package: "ghostget-skills", programs: rows }, null, 1)}\n`);
 }
 
 async function resolvedToolsFile(): Promise<string> {
@@ -114,12 +126,12 @@ async function run(rest: string[]): Promise<number> {
   const { flags: f, positional } = flags(rest);
   const program = positional[0];
   if (!program || f.help === true) {
-    process.stderr.write(USAGE);
+    await err(USAGE);
     return 2;
   }
   const manifestPath = program.endsWith(".algal.json") ? resolve(program) : join(PROGRAMS_DIR, `${program}.algal.json`);
   if (!existsSync(manifestPath)) {
-    process.stderr.write(`ghostget-skills: unknown program "${program}" — see 'ghostget-skills list'\n`);
+    await err(`ghostget-skills: unknown program "${program}" — see 'ghostget-skills list'\n`);
     return 2;
   }
   const args = (await readJsonArgument(flagValue(f, "args"))) as Record<string, Record<string, JsonValue>> | undefined;
@@ -133,9 +145,9 @@ async function run(rest: string[]): Promise<number> {
   });
   const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as Parameters<typeof interfaceOutputs>[0];
   const outputs = interfaceOutputs(manifest, receipt);
-  if (f.receipt === true) process.stdout.write(`${JSON.stringify(receipt)}\n`);
-  else if (f.quiet === true) process.stdout.write(`${JSON.stringify(outputs)}\n`);
-  else process.stdout.write(`${JSON.stringify({ program: program.replace(/\.algal\.json$/u, ""), outcome: receipt.outcome, ...(receipt.failure ? { failure: receipt.failure } : {}), outputs, receipt })}\n`);
+  if (f.receipt === true) await out(`${JSON.stringify(receipt)}\n`);
+  else if (f.quiet === true) await out(`${JSON.stringify(outputs)}\n`);
+  else await out(`${JSON.stringify({ program: program.replace(/\.algal\.json$/u, ""), outcome: receipt.outcome, ...(receipt.failure ? { failure: receipt.failure } : {}), outputs, receipt })}\n`);
   return receipt.outcome === "complete" ? 0 : 1;
 }
 
@@ -143,7 +155,7 @@ async function verify(rest: string[]): Promise<number> {
   const { flags: f, positional } = flags(rest);
   const receiptFile = positional[0];
   if (!receiptFile) {
-    process.stderr.write(USAGE);
+    await err(USAGE);
     return 2;
   }
   const receiptDocument = JSON.parse(await readFile(resolve(receiptFile), "utf8")) as { receipt?: JsonValue; manifestKey?: string } & Record<string, unknown>;
@@ -154,13 +166,13 @@ async function verify(rest: string[]): Promise<number> {
     const id = key.replace(/^organism:/u, "");
     const candidate = join(PROGRAMS_DIR, `${id}.algal.json`);
     if (!existsSync(candidate)) {
-      process.stderr.write(`ghostget-skills: cannot infer the manifest for "${key}"; pass it explicitly\n`);
+      await err(`ghostget-skills: cannot infer the manifest for "${key}"; pass it explicitly\n`);
       return 2;
     }
     manifestFile = candidate;
   }
   const report = await verifyRun(receipt, JSON.parse(await readFile(resolve(manifestFile), "utf8")) as JsonValue, flagValue(f, "dir"));
-  process.stdout.write(`${JSON.stringify(report, null, 1)}\n`);
+  await out(`${JSON.stringify(report, null, 1)}\n`);
   return report.ok ? 0 : 1;
 }
 
@@ -187,7 +199,7 @@ async function doctor(): Promise<number> {
   } catch {
     report.contractsCommandAvailable = false;
   }
-  process.stdout.write(`${JSON.stringify(report, null, 1)}\n`);
+  await out(`${JSON.stringify(report, null, 1)}\n`);
   return 0;
 }
 
@@ -195,19 +207,19 @@ async function installSkills(rest: string[]): Promise<number> {
   const { flags: f } = flags(rest);
   const target = flagValue(f, "target") ? resolve(flagValue(f, "target")!) : join(process.cwd(), ".agents", "skills");
   if (!existsSync(SKILLS)) {
-    process.stderr.write("ghostget-skills: no skills/ directory in this package\n");
+    await err("ghostget-skills: no skills/ directory in this package\n");
     return 2;
   }
   for (const entry of readdirSync(SKILLS, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const destination = join(target, entry.name);
     if (existsSync(destination)) {
-      process.stdout.write(`kept ${entry.name} (exists) -> ${destination}\n`);
+      await out(`kept ${entry.name} (exists) -> ${destination}\n`);
       continue;
     }
     mkdirSync(destination, { recursive: true });
     cpSync(join(SKILLS, entry.name), destination, { recursive: true });
-    process.stdout.write(`installed ${entry.name} -> ${destination}\n`);
+    await out(`installed ${entry.name} -> ${destination}\n`);
   }
   return 0;
 }
@@ -220,7 +232,7 @@ async function main(): Promise<number> {
       await list();
       return 0;
     case "tools":
-      process.stdout.write(await readFile(await resolvedToolsFile(), "utf8"));
+      await out(await readFile(await resolvedToolsFile(), "utf8"));
       return 0;
     case "run":
       return run(rest);
@@ -232,12 +244,14 @@ async function main(): Promise<number> {
       return installSkills(rest);
     case "--help":
     case "help":
-      process.stdout.write(USAGE);
+      await out(USAGE);
       return 0;
     default:
-      process.stderr.write(`ghostget-skills: unknown command "${command}"\n${USAGE}`);
+      await err(`ghostget-skills: unknown command "${command}"\n${USAGE}`);
       return 2;
   }
 }
 
-process.exit(await main());
+const code = await main();
+// Never call process.exit here: pending stdout writes to a pipe would be cut.
+process.exitCode = code;
