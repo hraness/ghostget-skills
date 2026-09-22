@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@hraness/algal": "github:hraness/algal#fcea4923fddaaaecfe4dc1468645b95e20205fc8",
-    "@hraness/ghostget": "github:hraness/ghostget#8220fbdbd1335a8c5e81bb8ded25ae57c76c80f6"
+    "@hraness/ghostget": "github:hraness/ghostget#5349022d59e80d4037d4cf4e2c966c5f90a83011"
   },
   "devDependencies": {
     "@types/bun": "^1.2.0",

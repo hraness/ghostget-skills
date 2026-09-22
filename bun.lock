@@ -6,7 +6,7 @@
       "name": "ghostget-skills",
       "dependencies": {
         "@hraness/algal": "github:hraness/algal#fcea4923fddaaaecfe4dc1468645b95e20205fc8",
-        "@hraness/ghostget": "github:hraness/ghostget#8220fbdbd1335a8c5e81bb8ded25ae57c76c80f6",
+        "@hraness/ghostget": "github:hraness/ghostget#5349022d59e80d4037d4cf4e2c966c5f90a83011",
       },
       "devDependencies": {
         "@types/bun": "^1.2.0",
@@ -99,7 +99,7 @@
 
     "@hraness/desktop-foundation": ["@hraness/desktop-foundation@https://github.com/hraness/desktop-foundation/releases/download/v0.7.0/hraness-desktop-foundation-0.7.0.tgz", { "bin": { "companion": "./dist/src/cli.js" } }, "sha512-lmGe/kJJqtVcbEIPKNGz0iWqVIb3jM4se1v5wR8vY6dA+haZ5u2XNBPL6n1zbLlMupZ7/Ue5/3SDU65x/yJ7SA=="],
 
-    "@hraness/ghostget": ["@hraness/ghostget@github:hraness/ghostget#8220fbd", { "dependencies": { "@1password/sdk": "0.5.0", "@hraness/accounts-cli": "github:hraness/accounts-cli#v0.1.3", "@hraness/desktop-foundation": "https://github.com/hraness/desktop-foundation/releases/download/v0.7.0/hraness-desktop-foundation-0.7.0.tgz", "@hraness/kb": "https://github.com/hraness/kb/releases/download/v0.19.6/hraness-kb-0.19.6.tgz", "@hraness/local-custody": "https://github.com/hraness/local-custody/releases/download/v0.6.0/hraness-local-custody-0.6.0.tgz", "@hraness/message-like-me": "github:hraness/textbutler#83453cc7c17b49bb53fdfd89ccb69b8b44b30af1", "@hraness/support-foundation": "github:hraness/support-foundation#2d034b357680353574411217d68b02b6755b07ed", "buffer-from": "1.1.2", "effect": "3.22.1", "source-map": "0.6.1", "source-map-support": "0.5.21", "typescript": "6.0.3" }, "bin": { "ghostget": "./src/cli.ts" } }, "hraness-ghostget-8220fbd", "sha512-thn65V3EDZR+142A+aPi18h+ZFcq+JrlO4geQSmgkED/4anMA0xdHjEPBtXLW34QyG2tVDr76g4dX+0WhTmYvA=="],
+    "@hraness/ghostget": ["@hraness/ghostget@github:hraness/ghostget#5349022", { "dependencies": { "@1password/sdk": "0.5.0", "@hraness/accounts-cli": "github:hraness/accounts-cli#v0.1.3", "@hraness/desktop-foundation": "https://github.com/hraness/desktop-foundation/releases/download/v0.7.0/hraness-desktop-foundation-0.7.0.tgz", "@hraness/kb": "https://github.com/hraness/kb/releases/download/v0.19.6/hraness-kb-0.19.6.tgz", "@hraness/local-custody": "https://github.com/hraness/local-custody/releases/download/v0.6.0/hraness-local-custody-0.6.0.tgz", "@hraness/message-like-me": "github:hraness/textbutler#83453cc7c17b49bb53fdfd89ccb69b8b44b30af1", "@hraness/support-foundation": "github:hraness/support-foundation#2d034b357680353574411217d68b02b6755b07ed", "buffer-from": "1.1.2", "effect": "3.22.1", "source-map": "0.6.1", "source-map-support": "0.5.21", "typescript": "6.0.3" }, "bin": { "ghostget": "./src/cli.ts" } }, "hraness-ghostget-5349022", "sha512-qzJbhgVZbuJXyQdzu1/hlBnyR7KtVhZdLBZexTGONvD0wQSGhDffz/mMqv1L4tsN5lwrL+JV7Sy+CqJKfiTRIQ=="],
 
     "@hraness/kb": ["@hraness/kb@https://github.com/hraness/kb/releases/download/v0.19.6/hraness-kb-0.19.6.tgz", { "dependencies": { "@hraness/oh": "github:hraness/oh#v0.2.0", "@steipete/sweet-cookie": "0.4.3", "@tobilu/qmd": "git+https://github.com/hraness/qmd.git#aa993dceb3ef8cfb71d470554ca437570f5a2b3c", "agent-browser": "0.32.3", "defuddle": "0.19.1", "effect": "3.22.1", "yaml": "^2.9.0", "zod": "^4.4.3" }, "bin": { "kb": "./dist/cli.js", "kb-evaluation-builder": "./dist/evaluation-builder.js" } }, "sha512-x+iwO3ilHlRabW9i2m+rWneIjQqVOxu0UdgjQyB+DHklo61SjPP4ECDmhYH369B5HmeMImqdEKopm/lNIGTMrA=="],
 
