@@ -1,4 +1,4 @@
-# The Ghostget ⇄ ALGAL seam (interface v1)
+# Ghostget and ALGAL interface (v1)
 
 This is the frozen interface both repositories build against. Ghostget
 implements section A; this package implements section B; section C names the
@@ -74,8 +74,8 @@ installed capability catalog. Unlike `capabilities --json` (~424 KB, ad hoc
 
 Rules: exact keys, no free-form prose beyond `description` fields already in
 manifests, no local paths, no auth IDs, no subjects. `contractHash` is the
-existing durable contract hash (webSession / provider / localCli / reviewed
-template — one field regardless of transport; the transport says which).
+existing durable contract hash (webSession, provider, localCli, or reviewed
+template: one field regardless of transport, and the transport says which).
 Invalid installed manifests appear as `{ "id", "invalid": true, "issues": [...] }`.
 Exit 0 when `ok`, 3 when an `--adapter` filter matches nothing.
 
@@ -203,25 +203,25 @@ locators, subjects are stripped, receipts are summarised.
 | `ghostget.page.read.v1` | read | `url: text`, `max-bytes?: json` | `{ok, status, canonicalUrl, wordCount, markdown(clipped), truncated}` |
 | `ghostget.doctor.v1` | read | — | bounded readiness summary (no paths) |
 | `ghostget.auth.list.v1` | read | — | `[{id, kind, provider}]` (no subjects/fingerprints) |
-| `time.wait.v1` | read | `ms: json` (≤ 120 000) | `{waitedMs}` — recorded effect so replay is exact |
+| `time.wait.v1` | read | `ms: json` (≤ 120 000) | `{waitedMs}`, a recorded effect so replay is exact |
 
 ### B2. Programs (`programs/*.algal.json`, zero model calls unless noted)
 
-- `capability-survey` — catalog → expr: per-adapter observed/capture-required
+- `capability-survey`: catalog → expr: per-adapter observed/capture-required
   counts + the R1 read list. Replaces reading 424 KB.
-- `plan-check` — plan → check → expr verdict summary.
-- `profile-stat-read` (inner) — one read: `wait(delay)` → `invoke.read` →
+- `plan-check`: plan → check → expr verdict summary.
+- `profile-stat-read` (inner): one read: `wait(delay)` → `invoke.read` →
   expr disposition → guarded `wait(60s)` → `invoke.read` (retry) → expr
   normalise: exact metrics only, categorical gaps, escalation kind
   (`repair-auth` | `recapture` | `doctor` | `none`).
-- `profile-stats` — plan → `check` (fail-closed on gaps unless `allow-gaps`)
+- `profile-stats`: plan → `check` (fail-closed on gaps unless `allow-gaps`)
   → expr flatten rows (order preserved) → `each` (sequential) →
   expr aggregate → slot `profile-stats:last-good` (read+write) → outputs
   `run` (jungle-compatible `SocialStatObservationRun`), `gaps`, `escalations`,
   `lastGood`.
-- `page-read` — `page.read` → expr clip/format.
-- `auth-health` — doctor + auth list → expr readiness per realm.
-- `drift-watch` — catalog → slot `contracts:baseline` → expr diff of
+- `page-read`: `page.read` → expr clip/format.
+- `auth-health`: doctor + auth list → expr readiness per realm.
+- `drift-watch`: catalog → slot `contracts:baseline` → expr diff of
   contractHash/state per operation → outputs `drifted[]`, writes new baseline.
 
 ### B3. Package surface
@@ -237,7 +237,8 @@ current, privacy scan, npm pack scope. CI: `.github/workflows/check.yml`.
 `bench/`: baseline bytes (raw `capabilities --json`, raw invoke envelopes ×15,
 raw doctor) vs program interface output bytes; labelled estimates only.
 `docs/seam.md` (this document, adapted), `docs/programs.md`, `docs/healing.md`
-(what is operational healing vs. evolution; evolution explicitly not claimed).
+(which failures a program handles during a run, and why a changed provider
+contract still needs a person).
 
 ## C. Jungle consumer
 

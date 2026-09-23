@@ -22,7 +22,7 @@ waiting its `requiredDelayBeforeMs`; a `retry-once-after-60s` disposition earns
 exactly one retry after 60 s; every other failure is a categorical gap. Nothing
 is estimated, rounded, cached, or scraped.
 
-Outputs: `run` (`{schemaVersion:1, scheduledDate, timezone, observations}` —
+Outputs: `run` (`{schemaVersion:1, scheduledDate, timezone, observations}`,
 exact counts only), `gaps` (per metric, with `stage` check|read and `expected`),
 `escalations` (`repair-auth` | `rebind` | `recapture` | `doctor` |
 `review-target` | `retry-later` | `review-plan` | `review-metric` |
