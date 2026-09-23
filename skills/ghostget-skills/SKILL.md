@@ -15,20 +15,20 @@ graph, and you receive only the compact typed outputs plus a receipt that
 
 ## Commands
 
-- `bunx ghostget-skills list` — programs with their inputs and outputs
-- `bunx ghostget-skills run <program> --args '{"src":{...}}' [--dir .algal]` — run one program; prints `{program, outcome, outputs, receipt}`
-- `bunx ghostget-skills run <program> --args @args.json --quiet` — outputs only
-- `bunx ghostget-skills verify <receipt.json>` — replay a run bit-for-bit without Ghostget
-- `bunx ghostget-skills doctor` — pinned Ghostget version and whether its `contracts` commands exist
+- `bunx ghostget-skills list`: programs with their inputs and outputs
+- `bunx ghostget-skills run <program> --args '{"src":{...}}' [--dir .algal]`: run one program; prints `{program, outcome, outputs, receipt}`
+- `bunx ghostget-skills run <program> --args @args.json --quiet`: outputs only
+- `bunx ghostget-skills verify <receipt.json>`: replay a run bit-for-bit without Ghostget
+- `bunx ghostget-skills doctor`: pinned Ghostget version and whether its `contracts` commands exist
 
 ## Programs
 
-- `capability-survey` — what is installed and observed, as counts plus the R1 read list
-- `plan-check` — verdict per read of a `ghostget.collection-plan.v1` document, no provider access
-- `profile-stats` — the checked plan collected sequentially with Ghostget's retry policy as structure
-- `page-read` — one URL as clipped Markdown with provenance
-- `auth-health` — doctor and auth locators reduced to a readiness report
-- `drift-watch` — contract hashes and states diffed against the remembered baseline
+- `capability-survey`: what is installed and observed, as counts plus the R1 read list
+- `plan-check`: verdict per read of a `ghostget.collection-plan.v1` document, no provider access
+- `profile-stats`: the checked plan collected sequentially with Ghostget's retry policy as structure
+- `page-read`: one URL as clipped Markdown with provenance
+- `auth-health`: doctor and auth locators reduced to a readiness report
+- `drift-watch`: contract hashes and states diffed against the remembered baseline
 
 ## Rules
 

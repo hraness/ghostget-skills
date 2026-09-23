@@ -19,6 +19,14 @@
 - After editing an embedded program run `bun scripts/pin-digests.ts`; after touching `programs/`, `src/`, `tools/`, `fixtures/`, or `bench/` regenerate `bench/report` with `bun bench/run-bench.ts`.
 - A receipt is execution evidence, not provider attestation. Do not describe recorded runs as live results.
 - Deliver changes to `main` through a pull request with the `Check` workflow green.
+- Follow `WRITING.md` for internal prose and `STYLE.md` for the README, docs, skills, and package description.
+
+<!-- hraness-public-copy:start -->
+- Public copy (websites, READMEs, docs, package and GitHub descriptions, CLI help, `llms.txt`, generated pages) follows `STYLE.md`, synced from hraness/.github. Text a model writes for publication also follows `GENERATION_STYLE.md`.
+- The delivery vocabulary in this file (admission, qualification, custody, receipt, bounded, lane, gate, surface, projection) is internal. Translate it into what the reader gets.
+- Take one-line product and sibling descriptions from the portfolio registry and versions from the release record. Tests pin facts, not prose.
+- Run `bun run check:copy` before handoff when the repository has it.
+<!-- hraness-public-copy:end -->
 
 <!-- oompa-local-efficiency:start -->
 - Treat the user's request to change this repository as standing authorization for routine task-owned commits, pushes, pull requests, merges, releases, deployments, and production verification after the gates applicable to that action pass. Do not ask for duplicate confirmation. Build confidence through relevant automated checks, bounded diagnostics, and independent review, not another human approval. Passing checks does not expand task scope or authority.

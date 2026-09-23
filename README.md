@@ -1,18 +1,22 @@
 # Ghostget Skills
 
-**Typed Ghostget workflows for Claude Code, Codex, and Devin. Zero model calls, replayable receipts.**
+Common Ghostget workflows packaged as programs for Claude Code, Codex, and
+Devin. They make no model calls, and every run leaves a receipt you can replay
+offline.
 
-Ghostget gives agents bounded provider operations behind exact contracts.
-Agents still had to *sequence* them by re-reading prose: check the catalog,
-confirm each read is observed and R1, wait sixty seconds before the LinkedIn
-company read, retry once after sixty seconds only on a throttle, never retry a
-repair-auth, keep going with the independent rows. This package turns those
-sequences into [ALGAL](https://github.com/hraness/algal) organisms: data
-manifests the runtime executes, where retries, delays, gaps, and escalations
-are structure, the Ghostget CLI runs inside bounded tool effects, and every
-run is a receipt that replays bit-for-bit without touching a provider.
+Ghostget gives agents a fixed set of provider actions, but using them well
+still takes a sequence of steps the agent has to reread each time: check the
+catalog, confirm each read is observed and R1, wait sixty seconds before the
+LinkedIn company read, retry once after sixty seconds only on a throttle, never
+retry a repair-auth, and keep going with the independent rows. This package
+writes those sequences down as [ALGAL](https://github.com/hraness/algal)
+programs (ALGAL calls them organisms). Each program is a data file the ALGAL
+runtime executes. Retries, delays, gaps, and escalations are part of the
+program rather than instructions for the agent, the Ghostget CLI runs inside
+capped tool calls, and every run produces a receipt that replays bit-for-bit
+without contacting a provider.
 
-[Programs](docs/programs.md) · [The seam](docs/seam.md) · [Healing, honestly](docs/healing.md) · [Metrics](docs/METRICS.md)
+[Programs](docs/programs.md) · [Interface with Ghostget](docs/seam.md) · [What recovery covers](docs/healing.md) · [Metrics](docs/METRICS.md)
 
 ## Install
 
@@ -65,7 +69,7 @@ with `ghostget contracts check`.
 The two inner organisms `profile-stat-read` and `profile-stat-attempt` are
 what `profile-stats` embeds by digest; see [docs/programs.md](docs/programs.md).
 
-## How the seam works
+## How it connects to Ghostget
 
 ```
 consumer ──run──▶ ghostget-skills (organisms + fns + ToolRegistry)
@@ -76,14 +80,14 @@ consumer ──run──▶ ghostget-skills (organisms + fns + ToolRegistry)
                   adapters · auth realms · state home   (private to Ghostget)
 ```
 
-Ghostget owns acquisition, account binding, invocation authority, and a
-**machine-checkable contract surface**: `ghostget contracts catalog` (the
+Ghostget owns acquisition, account binding, invocation authority, and a set
+of machine-checkable contract commands: `ghostget contracts catalog` (the
 installed catalog as a typed `ghostget.contract-catalog.v1` document),
 `ghostget contracts check --plan` (a verdict per read against that catalog),
 `ghostget contracts schema` (JSON Schema for every document), and the pure
 `@hraness/ghostget/contracts` SDK subpath. Ghostget never bundles a planner or
 an agent runtime. This package owns the organisms, the tool registry that
-wraps the CLI, the skills, and the evidence. Credentials never cross a port:
+wraps the CLI, the skills, and the evidence. Credentials never pass through this package:
 auth IDs are locators, receipts carry contract identity only, and the recorded
 runner used for tests and benches never sees a real one.
 
@@ -131,7 +135,7 @@ zero model calls. Its receipt then replayed bit-for-bit through
 `ghostget-skills verify` with no Ghostget executable available at all, which
 is what "capture once, replay offline" means here.
 
-## What healing means here
+## What recovery covers
 
 Implemented: contract checks before any read is spent, Ghostget's one-retry
 disposition as a `repeat` cell, per-row isolation through `each` and `on:fail`
@@ -141,8 +145,8 @@ edges, escalations from a closed set (`repair-auth`, `rebind`, `recapture`,
 fail verification when tampered with.
 
 Not claimed: repairing a drifted provider contract. That is a new authorised
-capture and a reviewed Ghostget release. This package detects it the moment it
-lands and names exactly what needs the human. [Details](docs/healing.md).
+capture and a reviewed Ghostget release. This package detects the change as
+soon as it is installed and names what a person needs to do. [Details](docs/healing.md).
 
 ## Development
 

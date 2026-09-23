@@ -7,17 +7,17 @@ do not claim.
 
 For each workflow the bench measures what would enter an agent's context:
 
-- `baseline_context_bytes` — the raw bytes of the Ghostget JSON or text an
+- `baseline_context_bytes`: the raw bytes of the Ghostget JSON or text an
   agent would read doing the job by hand. These are the recorded fixture
   documents themselves (catalog, contract check, one invoke envelope per read,
   doctor, auth list, page text), plus the skill reference an agent must re-read
   to plan a sequence where one applies (the social-profile-stats reference
   from the pinned Ghostget package).
-- `program_context_bytes` — the bytes of the interface outputs a consumer
+- `program_context_bytes`: the bytes of the interface outputs a consumer
   reads. Audit-only ports (the echoed check document, the memory slot) are
   excluded and listed under `consumer_outputs`.
-- `agent_calls`, `steps`, `work_units`, `effects` — from the run receipt.
-- `est_*_tokens = ceil(bytes / 4)` — a labelled estimate, not provider usage.
+- `agent_calls`, `steps`, `work_units`, `effects`: from the run receipt.
+- `est_*_tokens = ceil(bytes / 4)`: an estimate, not provider usage.
 
 Everything is deterministic: fixtures are synthetic, runs use the recorded
 runner, and the report carries a `source_fingerprint` over `programs/`,
