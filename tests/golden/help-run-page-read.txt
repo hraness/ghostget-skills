@@ -1,0 +1,13 @@
+Usage: ghostget-skills run page-read --args <json|@file> [--quiet]
+
+Read one URL as Markdown through Ghostget's capture runtime (public or signed-in, per Ghostget's own routing) and return a byte-clipped extract with provenance. Zero model calls.
+
+Inputs:
+  url  (--args src.url)
+  max-bytes  (--args src.max-bytes)
+
+Outputs:
+  report
+  text
+
+Example: ghostget-skills run page-read --args '{"src":{"url":"<url>","max-bytes":"<max-bytes>"}}' --quiet

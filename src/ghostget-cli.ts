@@ -200,7 +200,10 @@ export function ghostgetRunner(options: SpawnOptions = {}): GhostgetRunner {
     const argv = [...call.argv];
     if (!call.raw && !argv.includes("--json")) argv.push("--json");
     const child = spawn(executable, argv, {
-      env: { ...(options.environment ?? process.env) },
+      // Ghostget reads the audience to decide how to explain macOS permission
+      // prompts: agents get a JSON notice and a typed error, never a prompt
+      // to press Enter. A caller may still choose another audience.
+      env: { HRANESS_AUDIENCE: "agent", ...(options.environment ?? process.env) },
       stdio: [stdin === "" ? "ignore" : "pipe", "pipe", "pipe"],
     });
     const stdoutChunks: Buffer[] = [];

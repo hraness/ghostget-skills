@@ -1,0 +1,3 @@
+Usage: ghostget-skills install-skills [--target <dir>]
+
+Copy the agent skills into <dir> (default ./.agents/skills). Existing skills are kept.

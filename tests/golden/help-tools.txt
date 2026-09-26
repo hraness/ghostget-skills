@@ -1,0 +1,3 @@
+Usage: ghostget-skills tools
+
+Print the resolved tool registry the programs call, as JSON.

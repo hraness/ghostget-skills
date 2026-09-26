@@ -56,6 +56,35 @@ describe("ghostget.invoke.read.v1", () => {
     expect(report.status).toBe("failed");
     expect(report.readFailure).toEqual({ category: "auth-repair-required", retryDisposition: "repair-auth" });
   });
+  test("a macOS permission denial is grant-permission, never repair-auth", async () => {
+    const denial = {
+      ok: false,
+      error: {
+        code: "permission-denied",
+        kind: "keychain",
+        reason: "KEYCHAIN_DENIED",
+        message: "Ghostget can't use \"Chrome Safe Storage\" from your keychain: the keychain request was denied.",
+        next: "ghostget doctor",
+        settingsUrl: null,
+      },
+    };
+    const report = await tools({ [invokeKey(x)]: { json: denial, code: 3 } })["ghostget.invoke.read.v1"]({ read: x as never });
+    expect(report.ok).toBe(false);
+    expect(report.status).toBe("failed");
+    expect(report.readFailure).toEqual({ category: "permission-denied", retryDisposition: "grant-permission" });
+    expect(report.permission).toEqual({
+      code: "permission-denied",
+      kind: "keychain",
+      reason: "KEYCHAIN_DENIED",
+      message: denial.error.message,
+      next: "ghostget doctor",
+      settingsUrl: null,
+    });
+  });
+  test("keeps Ghostget's permission-denied read failure from a receipt", async () => {
+    const report = await tools({ [invokeKey(x)]: { json: failedEnvelope(x, "permission-denied", "grant-permission"), code: 1 } })["ghostget.invoke.read.v1"]({ read: x as never });
+    expect(report.readFailure).toEqual({ category: "permission-denied", retryDisposition: "grant-permission" });
+  });
   test("rejects an inconsistent disposition instead of trusting it", async () => {
     const report = await tools({ [invokeKey(x)]: { json: failedEnvelope(x, "contract-drift", "retry-once-after-60s"), code: 1 } })["ghostget.invoke.read.v1"]({ read: x as never });
     expect(report.readFailure).toBeUndefined();
@@ -125,6 +154,25 @@ describe("ghostget.page.read.v1", () => {
     const clipped = await tools({ "read https://example.com --media none": { stdout: PAGE_TEXT } })["ghostget.page.read.v1"]({ url: "https://example.com", "max-bytes": 512 });
     expect(clipped.truncated).toBe(false);
     expect(splitFrontmatter("no frontmatter").fields).toEqual({});
+  });
+  test("a Full Disk Access denial is reported as a permission problem", async () => {
+    const denial = JSON.stringify({
+      ok: false,
+      error: {
+        code: "permission-denied",
+        kind: "full-disk-access",
+        reason: "FDA_DENIED",
+        message: "Ghostget can't read Safari's cookies: macOS access is off for Terminal.",
+        next: "ghostget doctor",
+        settingsUrl: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles",
+      },
+    });
+    const report = await tools({ "read https://example.com --media none": { stdout: denial, code: 3 } })["ghostget.page.read.v1"]({ url: "https://example.com" });
+    expect(report.ok).toBe(false);
+    expect(report.status).toBe("permission-denied");
+    expect((report.permission as { kind: string }).kind).toBe("full-disk-access");
+    const other = await tools({ "read https://example.com --media none": { stdout: "not json", code: 3 } })["ghostget.page.read.v1"]({ url: "https://example.com" });
+    expect(other.status).toBe("read-failed");
   });
   test("rejects non-http URLs without a request", async () => {
     expect((await tools({})["ghostget.page.read.v1"]({ url: "file:///etc/passwd" })).status).toBe("invalid-input");

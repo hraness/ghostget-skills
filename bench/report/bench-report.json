@@ -1,7 +1,7 @@
 {
  "package": "ghostget-skills",
- "generated_at": "2026-09-21",
- "source_fingerprint": "sha256:9e08c2e7ae5dc5e5b54a78577fdf621f4c9897e87389244d2a954f6e28581c4e",
+ "generated_at": "2026-09-26",
+ "source_fingerprint": "sha256:ec677449fae9c6907fee37460bd626514588a3b706f454501661b65fb7f084bd",
  "methodology": {
   "baseline": "bytes of the raw Ghostget JSON/text an agent would read by hand for the same job, from the recorded fixtures (plus the skill reference where the agent must re-plan a sequence)",
   "program": "bytes of the interface outputs a consumer reads (audit-only echoes such as the full check document and the memory slot are excluded)",
@@ -13,9 +13,9 @@
   ]
  },
  "totals": {
-  "baseline_context_bytes": 94122,
+  "baseline_context_bytes": 94646,
   "program_context_bytes": 12633,
-  "context_reduction_pct": 86.6,
+  "context_reduction_pct": 86.7,
   "agent_calls": 0
  },
  "workflows": [
@@ -78,11 +78,11 @@
    "program": "profile-stats",
    "scenario": "clean",
    "outcome": "complete",
-   "baseline_context_bytes": 39389,
+   "baseline_context_bytes": 39651,
    "baseline_items": [
     {
      "label": "social-profile-stats.md reference (re-read to plan the sequence)",
-     "bytes": 9601
+     "bytes": 9863
     },
     {
      "label": "contracts check --json",
@@ -157,7 +157,7 @@
     "summary"
    ],
    "context_reduction_pct": 94.6,
-   "est_baseline_tokens": 9848,
+   "est_baseline_tokens": 9913,
    "est_program_tokens": 535,
    "agent_calls": 0,
    "steps": 204,
@@ -172,11 +172,11 @@
    "program": "profile-stats",
    "scenario": "gaps-and-retry",
    "outcome": "complete",
-   "baseline_context_bytes": 35637,
+   "baseline_context_bytes": 35899,
    "baseline_items": [
     {
      "label": "social-profile-stats.md reference",
-     "bytes": 9601
+     "bytes": 9863
     },
     {
      "label": "contracts check --json",
@@ -247,7 +247,7 @@
     "summary"
    ],
    "context_reduction_pct": 89.4,
-   "est_baseline_tokens": 8910,
+   "est_baseline_tokens": 8975,
    "est_program_tokens": 947,
    "agent_calls": 0,
    "steps": 194,

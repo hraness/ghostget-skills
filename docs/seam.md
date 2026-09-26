@@ -43,6 +43,7 @@ installed capability catalog. Unlike `capabilities --json` (~424 KB, ad hoc
     "readFailure": {
       "target-unavailable": "do-not-retry",
       "auth-repair-required": "repair-auth",
+      "permission-denied": "grant-permission",
       "account-mismatch": "do-not-retry",
       "contract-drift": "do-not-retry",
       "cleanup-required": "do-not-retry",
@@ -213,7 +214,7 @@ locators, subjects are stripped, receipts are summarised.
 - `profile-stat-read` (inner): one read: `wait(delay)` → `invoke.read` →
   expr disposition → guarded `wait(60s)` → `invoke.read` (retry) → expr
   normalise: exact metrics only, categorical gaps, escalation kind
-  (`repair-auth` | `recapture` | `doctor` | `none`).
+  (`repair-auth` | `grant-permission` | `recapture` | `doctor` | `none`).
 - `profile-stats`: plan → `check` (fail-closed on gaps unless `allow-gaps`)
   → expr flatten rows (order preserved) → `each` (sequential) →
   expr aggregate → slot `profile-stats:last-good` (read+write) → outputs

@@ -208,7 +208,7 @@ describe("pure functions", () => {
     expect(mismatch.reason).toBe("target-mismatch");
   });
   test("normalizeRead maps every closed failure category to an escalation", () => {
-    for (const [category, escalation] of Object.entries({ "auth-repair-required": "repair-auth", "account-mismatch": "rebind", "contract-drift": "recapture", "cleanup-required": "doctor", "target-unavailable": "review-target", "provider-throttled": "retry-later" })) {
+    for (const [category, escalation] of Object.entries({ "auth-repair-required": "repair-auth", "permission-denied": "grant-permission", "account-mismatch": "rebind", "contract-drift": "recapture", "cleanup-required": "doctor", "target-unavailable": "review-target", "provider-throttled": "retry-later" })) {
       const failed = failedEnvelope(read, category, "do-not-retry");
       const { result } = normalizeRead({ read: read as never, attempt: { report: { ok: false, status: "failed", readFailure: { category, retryDisposition: failed.readFailure.retryDisposition } } } }) as { result: Record<string, unknown> };
       expect(result.escalation).toBe(escalation);

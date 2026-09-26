@@ -17,6 +17,7 @@ type Inputs = Record<string, Json>;
 
 export const ESCALATIONS = Object.freeze({
   "auth-repair-required": "repair-auth",
+  "permission-denied": "grant-permission",
   "account-mismatch": "rebind",
   "contract-drift": "recapture",
   "cleanup-required": "doctor",

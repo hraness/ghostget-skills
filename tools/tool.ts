@@ -41,6 +41,10 @@ const MAX_PAGE_BYTES = 131_072;
 export const READ_FAILURE_DISPOSITIONS = Object.freeze({
   "target-unavailable": "do-not-retry",
   "auth-repair-required": "repair-auth",
+  // macOS blocked the browser sign-in read (a denied keychain request or
+  // missing Full Disk Access). A person must allow it; this is not an
+  // expired sign-in.
+  "permission-denied": "grant-permission",
   "account-mismatch": "do-not-retry",
   "contract-drift": "do-not-retry",
   "cleanup-required": "do-not-retry",
@@ -101,6 +105,40 @@ function parseReadFailure(value: unknown): { category: ReadFailureCategory; retr
   // Ghostget's disposition is authoritative when present and consistent.
   if (value.retryDisposition !== undefined && value.retryDisposition !== disposition) return null;
   return { category, retryDisposition: disposition };
+}
+
+const PERMISSION_ERROR_CODES = new Set(["permission-denied", "permission-unknown", "permission-skipped"]);
+
+/**
+ * Ghostget's `--json` error for a browser permission failure, reduced to the
+ * fields an agent needs to tell a person what to allow. Paths and account
+ * names never appear in it.
+ */
+function permissionFailure(doc: unknown): JsonRecord | null {
+  if (!isRecord(doc) || !isRecord(doc.error)) return null;
+  const error = doc.error;
+  const code = typeof error.code === "string" ? error.code : null;
+  if (code === null || !PERMISSION_ERROR_CODES.has(code)) return null;
+  const text = (key: string, limit: number): string | null =>
+    typeof error[key] === "string" ? (error[key] as string).slice(0, limit) : null;
+  return {
+    code,
+    kind: text("kind", 32),
+    reason: text("reason", 32),
+    message: text("message", 400),
+    next: text("next", 200),
+    settingsUrl: text("settingsUrl", 200),
+  };
+}
+
+function parseJsonDocument(text: string | undefined): unknown {
+  const trimmed = (text ?? "").trim();
+  if (!trimmed.startsWith("{") || trimmed.length > 64 * 1024) return null;
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch {
+    return null;
+  }
 }
 
 function stringField(record: Record<string, unknown>, key: string): string | null {
@@ -240,6 +278,17 @@ export function buildTools(deps: ToolDependencies) {
         output: clipped ? { clipped: true, bytes: bytes(output) } : output,
       };
     }
+    const permission = permissionFailure(doc);
+    if (permission) {
+      return {
+        ok: false,
+        status: "failed",
+        receipt,
+        exit: exitRecord(result),
+        readFailure: { category: "permission-denied", retryDisposition: READ_FAILURE_DISPOSITIONS["permission-denied"] },
+        permission,
+      };
+    }
     const readFailure = parseReadFailure(doc.readFailure);
     return {
       ok: false,
@@ -264,6 +313,8 @@ export function buildTools(deps: ToolDependencies) {
     const transport = transportFailure(result);
     if (transport) return transport;
     if (result.exit.kind === "exited" && result.exit.code !== 0) {
+      const permission = permissionFailure(parseJsonDocument(result.stdout));
+      if (permission) return failure("permission-denied", { exit: exitRecord(result), permission });
       return failure("read-failed", { exit: exitRecord(result), diagnostic: result.stderrTail });
     }
     const text = result.stdout ?? "";

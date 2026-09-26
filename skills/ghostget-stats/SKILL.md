@@ -24,10 +24,12 @@ is estimated, rounded, cached, or scraped.
 
 Outputs: `run` (`{schemaVersion:1, scheduledDate, timezone, observations}`,
 exact counts only), `gaps` (per metric, with `stage` check|read and `expected`),
-`escalations` (`repair-auth` | `rebind` | `recapture` | `doctor` |
+`escalations` (`repair-auth` | `grant-permission` | `rebind` | `recapture` | `doctor` |
 `review-target` | `retry-later` | `review-plan` | `review-metric` |
 `install-adapter`), `last-good` (memory), `summary`, and the full `check`.
 
 Act on escalations, never on gaps alone: `repair-auth` needs a fresh signed-in
-realm; `recapture` means the contract drifted and needs a new reviewed capture;
+realm; `grant-permission` means macOS blocked the browser sign-in read (a
+denied keychain request or missing Full Disk Access), so ask the person to
+allow it and stop, without re-adding or rebinding the account; `recapture` means the contract drifted and needs a new reviewed capture;
 `doctor` means run `ghostget doctor` before any retry. Keep the receipt.
