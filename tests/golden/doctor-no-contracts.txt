@@ -1,0 +1,4 @@
+✓ Ghostget 0.18.38 (pinned)
+✗ This Ghostget has no contracts commands
+✓ 8 programs · algal 0.4.0
+→ Upgrade the pinned Ghostget

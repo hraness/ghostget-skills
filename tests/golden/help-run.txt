@@ -1,0 +1,13 @@
+Usage: ghostget-skills run <program> --args <json|@file> [options]
+
+Run one program in-process and print { program, outcome, outputs, receipt }.
+
+Options:
+  --args <json|@file>          Program inputs, keyed by input cell
+  --dir <store>                Keep program memory in this folder
+  --recorded <scenario|@file>  Use recorded Ghostget responses instead of Ghostget
+  --receipt                    Print only the receipt, for verify
+  --quiet                      Print only the outputs
+
+Exit status: 0 when the run completes, 1 when it fails, 2 on a usage error.
+Run ghostget-skills run <program> --help for one program's inputs.

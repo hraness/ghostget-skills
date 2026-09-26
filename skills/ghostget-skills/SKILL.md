@@ -19,7 +19,8 @@ graph, and you receive only the compact typed outputs plus a receipt that
 - `bunx ghostget-skills run <program> --args '{"src":{...}}' [--dir .algal]`: run one program; prints `{program, outcome, outputs, receipt}`
 - `bunx ghostget-skills run <program> --args @args.json --quiet`: outputs only
 - `bunx ghostget-skills verify <receipt.json>`: replay a run bit-for-bit without Ghostget
-- `bunx ghostget-skills doctor`: pinned Ghostget version and whether its `contracts` commands exist
+- `bunx ghostget-skills doctor --json`: pinned Ghostget version and whether its `contracts` commands exist; exits 1 when not ready
+- `bunx ghostget-skills run <program> --help`: that program's inputs and outputs
 
 ## Programs
 
@@ -37,3 +38,4 @@ graph, and you receive only the compact typed outputs plus a receipt that
 - Pass `--dir` to a persistent store when a program uses memory (`profile-stats`, `drift-watch`).
 - A receipt is execution evidence, not provider attestation. Keep it for `verify` and for escalation review.
 - If Ghostget reports `contracts` as unavailable, upgrade the pinned Ghostget; do not fall back to raw CLI parsing.
+- A `grant-permission` escalation or `permission-denied` status means macOS blocked a browser sign-in read: `permission.reason` says which: a denied keychain request (`KEYCHAIN_DENIED`), a locked keychain or unanswered dialog (`KEYCHAIN_UNAVAILABLE`), or missing Full Disk Access (`FDA_DENIED`). Tell the person the report's `permission.message` and `permission.next`, then stop. It is not `repair-auth`; do not re-add or rebind the account. A first cookie-backed read may make macOS ask whether `security` can use a browser's Safe Storage key; tell the person before running it.

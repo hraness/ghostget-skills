@@ -1,0 +1,2 @@
+✗ Unknown command "stauts".
+→ ghostget-skills --help

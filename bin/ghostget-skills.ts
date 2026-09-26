@@ -6,12 +6,14 @@
 //        [--dir <store>] [--recorded <scenario|@file>] [--receipt] [--quiet]
 //   ghostget-skills verify <receipt.json> [manifest] [--dir <store>]
 //   ghostget-skills tools                                  resolved cmd: tool registry
-//   ghostget-skills doctor                                 pinned Ghostget + runtime readiness
+//   ghostget-skills doctor [--json]                        pinned Ghostget + runtime readiness
 //   ghostget-skills install-skills [--target <dir>]        copy skills/ into a skill registry
 //
 // `run` prints one JSON document: { program, outcome, outputs, receipt }.
 // Add --receipt to print only the receipt (for `verify`), --quiet for
 // outputs only. Exit 0 on a complete run, 1 when the run failed, 2 on usage.
+// `doctor` prints text for people and JSON with --json or for an agent; it
+// exits 1 when Ghostget is missing or lacks its contracts commands.
 
 import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -30,6 +32,17 @@ import {
   verifyRun,
 } from "../src/run-program.ts";
 import { resolveGhostgetExecutable, resolvePackageManifest } from "../src/ghostget-cli.ts";
+import {
+  COMMAND_HELP,
+  doctorReady,
+  programHelp,
+  renderDoctor,
+  style,
+  USAGE,
+  wantsJson,
+  type DoctorReport,
+  type ProgramManifest,
+} from "../src/cli-text.ts";
 
 const SKILLS = join(PKG, "skills");
 
@@ -38,20 +51,25 @@ const SKILLS = join(PKG, "skills");
  * pipe buffer. Every command's output goes through these. */
 async function write(stream: NodeJS.WriteStream, text: string): Promise<void> {
   await new Promise<void>((resolveWrite, rejectWrite) => {
-    stream.write(text, (error) => (error ? rejectWrite(error) : resolveWrite()));
+    stream.write(text, (error) => {
+      // A reader that stopped early (`| head`) is not a failure.
+      if (error && (error as NodeJS.ErrnoException).code !== "EPIPE") rejectWrite(error);
+      else resolveWrite();
+    });
   });
 }
+process.stdout.on("error", (error: NodeJS.ErrnoException) => {
+  if (error.code !== "EPIPE") throw error;
+});
 
 const out = (text: string) => write(process.stdout, text);
 const err = (text: string) => write(process.stderr, text);
-const USAGE = `usage:
-  ghostget-skills list
-  ghostget-skills run <program> --args <json|@file> [--dir <store>] [--recorded <scenario|@file>] [--receipt] [--quiet]
-  ghostget-skills verify <receipt.json> [manifest.algal.json] [--dir <store>]
-  ghostget-skills tools
-  ghostget-skills doctor
-  ghostget-skills install-skills [--target <dir>]
-`;
+/** One-line usage error plus the help command to read next. */
+async function usageError(message: string, command?: string): Promise<number> {
+  const s = style(process.stderr);
+  await err(`${s.fail} ${message}\n${s.next} ghostget-skills ${command === undefined ? "" : `${command} `}--help\n`);
+  return 2;
+}
 
 type Flags = Record<string, string[] | true>;
 
@@ -60,13 +78,17 @@ function flags(rest: string[]): { flags: Flags; positional: string[] } {
   const positional: string[] = [];
   for (let index = 0; index < rest.length; index += 1) {
     const argument = rest[index]!;
+    if (argument === "-h") {
+      out.help = true;
+      continue;
+    }
     if (!argument.startsWith("--")) {
       positional.push(argument);
       continue;
     }
     const name = argument.slice(2);
     const next = rest[index + 1];
-    if (["receipt", "quiet", "help"].includes(name) || next === undefined || next.startsWith("--")) {
+    if (["receipt", "quiet", "help", "json"].includes(name) || next === undefined || next.startsWith("--")) {
       out[name] = true;
       continue;
     }
@@ -125,14 +147,22 @@ async function recordedTools(spec: string) {
 async function run(rest: string[]): Promise<number> {
   const { flags: f, positional } = flags(rest);
   const program = positional[0];
-  if (!program || f.help === true) {
-    await err(USAGE);
-    return 2;
+  if (!program) {
+    if (f.help === true) {
+      await out(COMMAND_HELP.run!);
+      return 0;
+    }
+    return usageError("Name a program to run, such as ghostget-skills run page-read.", "run");
   }
   const manifestPath = program.endsWith(".algal.json") ? resolve(program) : join(PROGRAMS_DIR, `${program}.algal.json`);
   if (!existsSync(manifestPath)) {
-    await err(`ghostget-skills: unknown program "${program}" — see 'ghostget-skills list'\n`);
+    const s = style(process.stderr);
+    await err(`${s.fail} No program named "${program}".\n${s.next} ghostget-skills list\n`);
     return 2;
+  }
+  if (f.help === true) {
+    await out(programHelp(program.replace(/\.algal\.json$/u, ""), JSON.parse(await readFile(manifestPath, "utf8")) as ProgramManifest));
+    return 0;
   }
   const args = (await readJsonArgument(flagValue(f, "args"))) as Record<string, Record<string, JsonValue>> | undefined;
   const recordedSpec = flagValue(f, "recorded");
@@ -154,10 +184,11 @@ async function run(rest: string[]): Promise<number> {
 async function verify(rest: string[]): Promise<number> {
   const { flags: f, positional } = flags(rest);
   const receiptFile = positional[0];
-  if (!receiptFile) {
-    await err(USAGE);
-    return 2;
+  if (f.help === true) {
+    await out(COMMAND_HELP.verify!);
+    return 0;
   }
+  if (!receiptFile) return usageError("Name the receipt file to verify.", "verify");
   const receiptDocument = JSON.parse(await readFile(resolve(receiptFile), "utf8")) as { receipt?: JsonValue; manifestKey?: string } & Record<string, unknown>;
   const receipt = (receiptDocument.receipt ?? receiptDocument) as JsonValue & { manifestKey?: string };
   let manifestFile = positional[1];
@@ -166,8 +197,7 @@ async function verify(rest: string[]): Promise<number> {
     const id = key.replace(/^organism:/u, "");
     const candidate = join(PROGRAMS_DIR, `${id}.algal.json`);
     if (!existsSync(candidate)) {
-      await err(`ghostget-skills: cannot infer the manifest for "${key}"; pass it explicitly\n`);
-      return 2;
+      return usageError(`Can't tell which program made this receipt ("${key}"). Pass its manifest after the receipt.`, "verify");
     }
     manifestFile = candidate;
   }
@@ -176,8 +206,13 @@ async function verify(rest: string[]): Promise<number> {
   return report.ok ? 0 : 1;
 }
 
-async function doctor(): Promise<number> {
-  const report: Record<string, unknown> = { package: "ghostget-skills" };
+async function doctor(rest: string[]): Promise<number> {
+  const { flags: f } = flags(rest);
+  if (f.help === true) {
+    await out(COMMAND_HELP.doctor!);
+    return 0;
+  }
+  const report = { package: "ghostget-skills" } as unknown as DoctorReport;
   let executable: string | null = null;
   try {
     executable = resolveGhostgetExecutable();
@@ -201,12 +236,18 @@ async function doctor(): Promise<number> {
     const probe = Bun.spawnSync([executable, "contracts", "schema", "plan", "--json"], { stdout: "pipe", stderr: "pipe" });
     report.contractsCommandAvailable = probe.exitCode === 0;
   }
-  await out(`${JSON.stringify(report, null, 1)}\n`);
-  return 0;
+  report.ok = doctorReady(report);
+  if (wantsJson(f.json === true)) await out(`${JSON.stringify(report, null, 1)}\n`);
+  else await out(renderDoctor(report, style(process.stdout)));
+  return doctorReady(report) ? 0 : 1;
 }
 
 async function installSkills(rest: string[]): Promise<number> {
   const { flags: f } = flags(rest);
+  if (f.help === true) {
+    await out(COMMAND_HELP["install-skills"]!);
+    return 0;
+  }
   const target = flagValue(f, "target") ? resolve(flagValue(f, "target")!) : join(process.cwd(), ".agents", "skills");
   if (!existsSync(SKILLS)) {
     await err("ghostget-skills: no skills/ directory in this package\n");
@@ -228,6 +269,10 @@ async function installSkills(rest: string[]): Promise<number> {
 
 async function main(): Promise<number> {
   const [command, ...rest] = process.argv.slice(2);
+  if (command !== undefined && Object.hasOwn(COMMAND_HELP, command) && (rest.includes("--help") || rest.includes("-h")) && command !== "run") {
+    await out(COMMAND_HELP[command]!);
+    return 0;
+  }
   switch (command) {
     case "list":
     case undefined:
@@ -241,16 +286,24 @@ async function main(): Promise<number> {
     case "verify":
       return verify(rest);
     case "doctor":
-      return doctor();
+      return doctor(rest);
     case "install-skills":
       return installSkills(rest);
     case "--help":
-    case "help":
-      await out(USAGE);
+    case "-h":
+    case "help": {
+      const topic = rest[0];
+      if (topic === undefined) {
+        await out(USAGE);
+        return 0;
+      }
+      const help = Object.hasOwn(COMMAND_HELP, topic) ? COMMAND_HELP[topic] : undefined;
+      if (help === undefined) return usageError(`No help topic named "${topic}".`);
+      await out(help);
       return 0;
+    }
     default:
-      await err(`ghostget-skills: unknown command "${command}"\n${USAGE}`);
-      return 2;
+      return usageError(`Unknown command "${command}".`);
   }
 }
 

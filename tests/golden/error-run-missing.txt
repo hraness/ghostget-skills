@@ -1,0 +1,2 @@
+✗ Name a program to run, such as ghostget-skills run page-read.
+→ ghostget-skills run --help

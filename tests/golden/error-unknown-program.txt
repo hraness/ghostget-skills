@@ -1,0 +1,2 @@
+✗ No program named "nope".
+→ ghostget-skills list

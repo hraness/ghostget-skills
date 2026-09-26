@@ -29,8 +29,10 @@ ghostget-skills doctor
 ghostget-skills install-skills --target .agents/skills   # or .claude/skills, .devin/skills
 ```
 
-`doctor` reports the pinned Ghostget version and whether its `contracts`
-commands answer. Ghostget's own account setup (`ghostget auth add`, `auth
+`doctor` checks the pinned Ghostget version and whether its `contracts`
+commands answer, prints one line per check, and exits 1 when something needs
+fixing. Add `--json` for the full report. Every command has `--help`, and
+`ghostget-skills run <program> --help` lists that program's inputs. Ghostget's own account setup (`ghostget auth add`, `auth
 bind`, `adapter sync-bundled`) is unchanged and stays in Ghostget.
 
 ## Use

@@ -1,0 +1,3 @@
+Usage: ghostget-skills list
+
+Print every packaged program with its inputs and outputs as JSON.

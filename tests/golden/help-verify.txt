@@ -1,0 +1,4 @@
+Usage: ghostget-skills verify <receipt.json> [manifest.algal.json] [--dir <store>]
+
+Replay a run bit-for-bit from its receipt, without Ghostget or a provider.
+Exit status: 0 when the replay matches, 1 when it does not.

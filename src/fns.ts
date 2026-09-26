@@ -17,6 +17,7 @@ type Inputs = Record<string, Json>;
 
 export const ESCALATIONS = Object.freeze({
   "auth-repair-required": "repair-auth",
+  "permission-denied": "grant-permission",
   "account-mismatch": "rebind",
   "contract-drift": "recapture",
   "cleanup-required": "doctor",
@@ -171,7 +172,9 @@ export function normalizeRead(inputs: Inputs): { result: Json } {
     const readFailure = isRecord(report.readFailure) ? report.readFailure : null;
     const category = readFailure ? str(readFailure.category) : null;
     if (category !== null) {
-      return failWith(category, ESCALATIONS[category as keyof typeof ESCALATIONS] ?? "doctor", { retryDisposition: str(readFailure?.retryDisposition) });
+      // Keep what the person has to allow, so the escalation can say it.
+      const permission = category === "permission-denied" && isRecord(report.permission) ? { permission: report.permission } : {};
+      return failWith(category, ESCALATIONS[category as keyof typeof ESCALATIONS] ?? "doctor", { retryDisposition: str(readFailure?.retryDisposition), ...permission });
     }
     const status = str(report.status) ?? "invocation-failed";
     return failWith(status, status === "not-a-read" || status === "invalid-input" ? "review-plan" : "doctor", str(report.diagnostic));
@@ -244,7 +247,8 @@ export function aggregateRun(inputs: Inputs): { run: Json; gaps: Json; escalatio
     }
     const escalation = str(result.escalation);
     if (escalation && escalation !== "none") {
-      escalations.push({ kind: escalation, accountKey, adapter: result.adapter ?? null, operation: result.operation ?? null, reason: result.reason ?? null, attempts: result.attempts ?? null });
+      const permission = isRecord(result.detail) && isRecord(result.detail.permission) ? { permission: result.detail.permission } : {};
+      escalations.push({ kind: escalation, accountKey, adapter: result.adapter ?? null, operation: result.operation ?? null, reason: result.reason ?? null, attempts: result.attempts ?? null, ...permission });
     }
   }
   const orderedKeys: string[] = [];
