@@ -171,6 +171,7 @@ describe("ghostget.page.read.v1", () => {
     expect(report.ok).toBe(false);
     expect(report.status).toBe("permission-denied");
     expect((report.permission as { kind: string }).kind).toBe("full-disk-access");
+    expect(report.diagnostic).toBe("Ghostget can't read Safari's cookies: macOS access is off for Terminal. → ghostget doctor");
     const other = await tools({ "read https://example.com --media none": { stdout: "not json", code: 3 } })["ghostget.page.read.v1"]({ url: "https://example.com" });
     expect(other.status).toBe("read-failed");
   });

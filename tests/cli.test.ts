@@ -98,6 +98,15 @@ describe("usage errors", () => {
     golden("error-unknown-program.txt", result.stderr);
   });
 
+  test("built-in object names are unknown commands, not crashes", () => {
+    const command = cli(["toString", "--help"]);
+    expect(command.code).toBe(2);
+    expect(command.stderr).toBe("✗ Unknown command \"toString\".\n→ ghostget-skills --help\n");
+    const topic = cli(["help", "constructor"]);
+    expect(topic.code).toBe(2);
+    expect(topic.stderr).toBe("✗ No help topic named \"constructor\".\n→ ghostget-skills --help\n");
+  });
+
   test("verify without a receipt", () => {
     const result = cli(["verify"]);
     expect(result.code).toBe(2);

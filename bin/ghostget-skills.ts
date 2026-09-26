@@ -269,7 +269,7 @@ async function installSkills(rest: string[]): Promise<number> {
 
 async function main(): Promise<number> {
   const [command, ...rest] = process.argv.slice(2);
-  if (command !== undefined && command in COMMAND_HELP && (rest.includes("--help") || rest.includes("-h")) && command !== "run") {
+  if (command !== undefined && Object.hasOwn(COMMAND_HELP, command) && (rest.includes("--help") || rest.includes("-h")) && command !== "run") {
     await out(COMMAND_HELP[command]!);
     return 0;
   }
@@ -297,7 +297,7 @@ async function main(): Promise<number> {
         await out(USAGE);
         return 0;
       }
-      const help = COMMAND_HELP[topic];
+      const help = Object.hasOwn(COMMAND_HELP, topic) ? COMMAND_HELP[topic] : undefined;
       if (help === undefined) return usageError(`No help topic named "${topic}".`);
       await out(help);
       return 0;

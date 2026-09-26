@@ -9,6 +9,7 @@ import {
   callKey,
   canonicalJson,
   firstJsonDocument,
+  ghostgetRunner,
   pinnedGhostgetCandidates,
   recordedRunner,
   redactDiagnostic,
@@ -118,5 +119,18 @@ describe("recordedRunner", () => {
     expect(result.exit).toEqual({ kind: "exited", code: 2 });
     expect(result.json).toBeNull();
     expect(misses).toEqual(["auth list"]);
+  });
+});
+
+describe("ghostgetRunner environment", () => {
+  test("Ghostget always runs in the agent audience", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "ghostget-skills-audience-"));
+    const fake = join(directory, "ghostget");
+    writeFileSync(fake, "#!/bin/sh\nprintf '{\"audience\":\"%s\"}\\n' \"$HRANESS_AUDIENCE\"\n", { mode: 0o755 });
+    const result = await ghostgetRunner({
+      executable: fake,
+      environment: { PATH: process.env.PATH ?? "", HRANESS_AUDIENCE: "human" },
+    })({ argv: ["doctor"] });
+    expect(result.json).toEqual({ audience: "agent" });
   });
 });

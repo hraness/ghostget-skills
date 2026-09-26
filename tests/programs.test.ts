@@ -207,6 +207,14 @@ describe("pure functions", () => {
     const mismatch = normalizeRead({ read: read as never, attempt: { report: { ok: true, output: rounded } } as never }).result as Record<string, unknown>;
     expect(mismatch.reason).toBe("target-mismatch");
   });
+  test("a permission escalation keeps what the person must allow", () => {
+    const permission = { code: "permission-denied", kind: "keychain", reason: "KEYCHAIN_DENIED", message: "Denied.", next: "ghostget doctor", settingsUrl: null };
+    const { result } = normalizeRead({ read: read as never, attempt: { report: { ok: false, status: "failed", readFailure: { category: "permission-denied", retryDisposition: "grant-permission" }, permission } } }) as { result: Record<string, unknown> };
+    expect(result.escalation).toBe("grant-permission");
+    expect(result.detail).toEqual({ retryDisposition: "grant-permission", permission });
+    const aggregated = aggregateRun({ plan: { accounts: [] }, results: [result as never], "plan-gaps": [], "scheduled-date": "2026-09-26", timezone: "America/New_York", "last-good": null }) as { escalations: Array<Record<string, unknown>> };
+    expect(aggregated.escalations[0]).toMatchObject({ kind: "grant-permission", permission });
+  });
   test("normalizeRead maps every closed failure category to an escalation", () => {
     for (const [category, escalation] of Object.entries({ "auth-repair-required": "repair-auth", "permission-denied": "grant-permission", "account-mismatch": "rebind", "contract-drift": "recapture", "cleanup-required": "doctor", "target-unavailable": "review-target", "provider-throttled": "retry-later" })) {
       const failed = failedEnvelope(read, category, "do-not-retry");

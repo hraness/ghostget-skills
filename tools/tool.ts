@@ -131,6 +131,12 @@ function permissionFailure(doc: unknown): JsonRecord | null {
   };
 }
 
+/** "message → next" for text outputs that show one diagnostic line. */
+function permissionDiagnostic(permission: JsonRecord): string {
+  const message = typeof permission.message === "string" ? permission.message : "macOS blocked the browser sign-in read.";
+  return typeof permission.next === "string" ? `${message} → ${permission.next}` : message;
+}
+
 function parseJsonDocument(text: string | undefined): unknown {
   const trimmed = (text ?? "").trim();
   if (!trimmed.startsWith("{") || trimmed.length > 64 * 1024) return null;
@@ -314,7 +320,7 @@ export function buildTools(deps: ToolDependencies) {
     if (transport) return transport;
     if (result.exit.kind === "exited" && result.exit.code !== 0) {
       const permission = permissionFailure(parseJsonDocument(result.stdout));
-      if (permission) return failure("permission-denied", { exit: exitRecord(result), permission });
+      if (permission) return failure("permission-denied", { exit: exitRecord(result), permission, diagnostic: permissionDiagnostic(permission) });
       return failure("read-failed", { exit: exitRecord(result), diagnostic: result.stderrTail });
     }
     const text = result.stdout ?? "";
