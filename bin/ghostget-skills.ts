@@ -293,7 +293,7 @@ async function main(): Promise<number> {
     case "-h":
     case "help": {
       const topic = rest[0];
-      if (topic === undefined) {
+      if (topic === undefined || topic === "--help" || topic === "-h") {
         await out(USAGE);
         return 0;
       }
