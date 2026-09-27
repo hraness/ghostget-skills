@@ -31,8 +31,8 @@ function cli(args: readonly string[], env: Record<string, string> = {}) {
 
 describe("help", () => {
   test("root help is grouped and exits 0", () => {
-    for (const flag of ["--help", "-h", "help"]) {
-      const result = cli([flag]);
+    for (const argv of [["--help"], ["-h"], ["help"], ["help", "--help"], ["help", "-h"]]) {
+      const result = cli(argv);
       expect(result.code).toBe(0);
       expect(result.stderr).toBe("");
       expect(result.stdout).toBe(USAGE);
