@@ -3,14 +3,14 @@
 
 export const USAGE = `Usage: ghostget-skills <command> [options]
 
-Run Ghostget workflows as replayable programs with no model calls.
+Run GhostGet workflows as replayable programs with no model calls.
 
 Commands:
   list                       List the packaged programs (JSON)
   run <program>              Run one program and print its JSON result
-  verify <receipt.json>      Replay a run from its receipt without Ghostget
+  verify <receipt.json>      Replay a run from its receipt without GhostGet
   tools                      Print the resolved tool registry (JSON)
-  doctor                     Check the pinned Ghostget and runtime
+  doctor                     Check the pinned GhostGet and runtime
   install-skills             Copy the agent skills into a skill folder
 
 Run ghostget-skills <command> --help for its options.
@@ -28,7 +28,7 @@ Run one program in-process and print { program, outcome, outputs, receipt }.
 Options:
   --args <json|@file>          Program inputs, keyed by input cell
   --dir <store>                Keep program memory in this folder
-  --recorded <scenario|@file>  Use recorded Ghostget responses instead of Ghostget
+  --recorded <scenario|@file>  Use recorded GhostGet responses instead of GhostGet
   --receipt                    Print only the receipt, for verify
   --quiet                      Print only the outputs
 
@@ -37,7 +37,7 @@ Run ghostget-skills run <program> --help for one program's inputs.
 `,
   verify: `Usage: ghostget-skills verify <receipt.json> [manifest.algal.json] [--dir <store>]
 
-Replay a run bit-for-bit from its receipt, without Ghostget or a provider.
+Replay a run bit-for-bit from its receipt, without GhostGet or a provider.
 Exit status: 0 when the replay matches, 1 when it does not.
 `,
   tools: `Usage: ghostget-skills tools
@@ -46,7 +46,7 @@ Print the resolved tool registry the programs call, as JSON.
 `,
   doctor: `Usage: ghostget-skills doctor [--json]
 
-Check that the pinned Ghostget runs and has its contracts commands.
+Check that the pinned GhostGet runs and has its contracts commands.
 Exit status: 0 when ready, 1 when something needs fixing.
 `,
   "install-skills": `Usage: ghostget-skills install-skills [--target <dir>]

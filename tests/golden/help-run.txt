@@ -5,7 +5,7 @@ Run one program in-process and print { program, outcome, outputs, receipt }.
 Options:
   --args <json|@file>          Program inputs, keyed by input cell
   --dir <store>                Keep program memory in this folder
-  --recorded <scenario|@file>  Use recorded Ghostget responses instead of Ghostget
+  --recorded <scenario|@file>  Use recorded GhostGet responses instead of GhostGet
   --receipt                    Print only the receipt, for verify
   --quiet                      Print only the outputs
 
