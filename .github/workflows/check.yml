@@ -6,8 +6,10 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: check-${{ github.ref }}
-  cancel-in-progress: true
+  # PR runs share a ref-keyed group so a newer push cancels the superseded run;
+  # main runs are keyed by SHA so a later merge never cancels an earlier main run.
+  group: check-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   check:
     runs-on: ubuntu-latest
