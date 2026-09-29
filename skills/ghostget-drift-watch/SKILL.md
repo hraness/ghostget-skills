@@ -1,6 +1,6 @@
 ---
 name: ghostget-drift-watch
-description: "Detect Ghostget contract drift after an upgrade by diffing the installed catalog (contract hashes, versions, states) against the baseline remembered in a durable slot. First run records the baseline. Zero model calls."
+description: "Detect GhostGet contract drift after an upgrade by diffing the installed catalog (contract hashes, versions, states) against the baseline remembered in a durable slot. First run records the baseline. Zero model calls."
 argument-hint: "run drift-watch --dir <store> --quiet --args <json with src.request>"
 allowed-tools: ["exec"]
 ---

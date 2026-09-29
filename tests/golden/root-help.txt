@@ -1,13 +1,13 @@
 Usage: ghostget-skills <command> [options]
 
-Run Ghostget workflows as replayable programs with no model calls.
+Run GhostGet workflows as replayable programs with no model calls.
 
 Commands:
   list                       List the packaged programs (JSON)
   run <program>              Run one program and print its JSON result
-  verify <receipt.json>      Replay a run from its receipt without Ghostget
+  verify <receipt.json>      Replay a run from its receipt without GhostGet
   tools                      Print the resolved tool registry (JSON)
-  doctor                     Check the pinned Ghostget and runtime
+  doctor                     Check the pinned GhostGet and runtime
   install-skills             Copy the agent skills into a skill folder
 
 Run ghostget-skills <command> --help for its options.

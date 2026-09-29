@@ -1,6 +1,6 @@
 ---
 name: ghostget-capabilities
-description: "Survey what Ghostget can do on this machine without reading the full capabilities dump. Per-adapter observed and capture-required operations plus the R1 read list with authority and input keys. Zero model calls."
+description: "Survey what GhostGet can do on this machine without reading the full capabilities dump. Per-adapter observed and capture-required operations plus the R1 read list with authority and input keys. Zero model calls."
 argument-hint: "run capability-survey --quiet --args <json with src.request>"
 allowed-tools: ["exec"]
 ---

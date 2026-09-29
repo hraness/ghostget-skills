@@ -1,4 +1,4 @@
-# Ghostget and ALGAL interface (v1)
+# GhostGet and ALGAL interface (v1)
 
 This is the frozen interface both repositories build against. Ghostget
 implements section A; this package implements section B; section C names the
@@ -21,7 +21,7 @@ consumer  ──run──▶  ghostget-skills (algal organisms + ToolRegistry)
                     provider adapters, auth realms, state home (private)
 ```
 
-## A. Ghostget side: `ghostget contracts` + `@hraness/ghostget/contracts`
+## A. GhostGet side: `ghostget contracts` + `@hraness/ghostget/contracts`
 
 ### A1. `ghostget contracts catalog [--adapter <id>]... --json`
 

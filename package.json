@@ -1,7 +1,7 @@
 {
   "name": "ghostget-skills",
   "version": "0.1.0",
-  "description": "Agent skills for Claude Code, Codex, and Devin that run Ghostget provider reads, plan checks, and contract-drift checks as fixed ALGAL programs, with no model calls and a replayable receipt for every run.",
+  "description": "Agent skills for Claude Code, Codex, and Devin that run GhostGet provider reads, plan checks, and contract-drift checks as fixed ALGAL programs, with no model calls and a replayable receipt for every run.",
   "license": "MIT",
   "repository": {
     "type": "git",

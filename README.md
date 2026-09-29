@@ -1,10 +1,10 @@
-# Ghostget Skills
+# GhostGet Skills
 
-Common Ghostget workflows packaged as programs for Claude Code, Codex, and
+Common GhostGet workflows packaged as programs for Claude Code, Codex, and
 Devin. They make no model calls, and every run leaves a receipt you can replay
 offline.
 
-Ghostget gives agents a fixed set of provider actions, but using them well
+GhostGet gives agents a fixed set of provider actions, but using them well
 still takes a sequence of steps the agent has to reread each time: check the
 catalog, confirm each read is observed and R1, wait sixty seconds before the
 LinkedIn company read, retry once after sixty seconds only on a throttle, never
@@ -12,15 +12,15 @@ retry a repair-auth, and keep going with the independent rows. This package
 writes those sequences down as [ALGAL](https://github.com/hraness/algal)
 programs (ALGAL calls them organisms). Each program is a data file the ALGAL
 runtime executes. Retries, delays, gaps, and escalations are part of the
-program rather than instructions for the agent, the Ghostget CLI runs inside
+program rather than instructions for the agent, the GhostGet CLI runs inside
 capped tool calls, and every run produces a receipt that replays bit-for-bit
 without contacting a provider.
 
-[Programs](docs/programs.md) · [Interface with Ghostget](docs/seam.md) · [What recovery covers](docs/healing.md) · [Metrics](docs/METRICS.md)
+[Programs](docs/programs.md) · [Interface with GhostGet](docs/seam.md) · [What recovery covers](docs/healing.md) · [Metrics](docs/METRICS.md)
 
 ## Install
 
-Requires Bun 1.3+ on macOS or Linux and a Ghostget with the `contracts`
+Requires Bun 1.3+ on macOS or Linux and a GhostGet with the `contracts`
 commands (0.18.24 or later; the package pins one).
 
 ```sh
@@ -29,11 +29,11 @@ ghostget-skills doctor
 ghostget-skills install-skills --target .agents/skills   # or .claude/skills, .devin/skills
 ```
 
-`doctor` checks the pinned Ghostget version and whether its `contracts`
+`doctor` checks the pinned GhostGet version and whether its `contracts`
 commands answer, prints one line per check, and exits 1 when something needs
 fixing. Add `--json` for the full report. Every command has `--help`, and
-`ghostget-skills run <program> --help` lists that program's inputs. Ghostget's own account setup (`ghostget auth add`, `auth
-bind`, `adapter sync-bundled`) is unchanged and stays in Ghostget.
+`ghostget-skills run <program> --help` lists that program's inputs. GhostGet's own account setup (`ghostget auth add`, `auth
+bind`, `adapter sync-bundled`) is unchanged and stays in GhostGet.
 
 ## Use
 
@@ -54,7 +54,7 @@ ghostget-skills verify run.json
 
 `run` prints `{program, outcome, outputs, receipt}`. `plan.json` is a
 [`ghostget.collection-plan.v1`](docs/seam.md#a3-ghostgetcollection-planv1)
-document; Ghostget ships one for the Hraness accounts and validates any other
+document; GhostGet ships one for the Hraness accounts and validates any other
 with `ghostget contracts check`.
 
 ## Programs
@@ -71,7 +71,7 @@ with `ghostget contracts check`.
 The two inner organisms `profile-stat-read` and `profile-stat-attempt` are
 what `profile-stats` embeds by digest; see [docs/programs.md](docs/programs.md).
 
-## How it connects to Ghostget
+## How it connects to GhostGet
 
 ```
 consumer ──run──▶ ghostget-skills (organisms + fns + ToolRegistry)
@@ -79,15 +79,15 @@ consumer ──run──▶ ghostget-skills (organisms + fns + ToolRegistry)
                        ▼
                   ghostget CLI  (contracts catalog | contracts check | invoke | read | doctor | auth list)
                        │
-                  adapters · auth realms · state home   (private to Ghostget)
+                  adapters · auth realms · state home   (private to GhostGet)
 ```
 
-Ghostget owns acquisition, account binding, invocation authority, and a set
+GhostGet owns acquisition, account binding, invocation authority, and a set
 of machine-checkable contract commands: `ghostget contracts catalog` (the
 installed catalog as a typed `ghostget.contract-catalog.v1` document),
 `ghostget contracts check --plan` (a verdict per read against that catalog),
 `ghostget contracts schema` (JSON Schema for every document), and the pure
-`@hraness/ghostget/contracts` SDK subpath. Ghostget never bundles a planner or
+`@hraness/ghostget/contracts` SDK subpath. GhostGet never bundles a planner or
 an agent runtime. This package owns the organisms, the tool registry that
 wraps the CLI, the skills, and the evidence. Credentials never pass through this package:
 auth IDs are locators, receipts carry contract identity only, and the recorded
@@ -95,7 +95,7 @@ runner used for tests and benches never sees a real one.
 
 ## Measured results
 
-`bun bench/run-bench.ts` compares the raw Ghostget documents an agent would
+`bun bench/run-bench.ts` compares the raw GhostGet documents an agent would
 read by hand against the outputs a consumer reads, on deterministic fixtures:
 
 | workflow | baseline bytes | program bytes | reduction |
@@ -113,7 +113,7 @@ These are byte figures over synthetic fixtures with `est_tokens =
 ceil(bytes/4)`, not provider usage or task-success claims.
 
 One live measurement, taken on 2026-09-21 against a real installed catalog of
-23 adapters through a development Ghostget build carrying the contracts
+23 adapters through a development GhostGet build carrying the contracts
 surface:
 
 | surface | bytes |
@@ -134,12 +134,12 @@ day. A two-account public plan passed `contracts check`, ran its reads
 sequentially with the plan's delay, and returned exact counts that matched the
 providers, with no gaps and no escalations across five recorded effects and
 zero model calls. Its receipt then replayed bit-for-bit through
-`ghostget-skills verify` with no Ghostget executable available at all, which
+`ghostget-skills verify` with no GhostGet executable available at all, which
 is what "capture once, replay offline" means here.
 
 ## What recovery covers
 
-Implemented: contract checks before any read is spent, Ghostget's one-retry
+Implemented: contract checks before any read is spent, GhostGet's one-retry
 disposition as a `repeat` cell, per-row isolation through `each` and `on:fail`
 edges, escalations from a closed set (`repair-auth`, `rebind`, `recapture`,
 `doctor`, `review-target`, `retry-later`, `review-plan`, `review-metric`,
@@ -147,7 +147,7 @@ edges, escalations from a closed set (`repair-auth`, `rebind`, `recapture`,
 fail verification when tampered with.
 
 Not claimed: repairing a drifted provider contract. That is a new authorised
-capture and a reviewed Ghostget release. This package detects the change as
+capture and a reviewed GhostGet release. This package detects the change as
 soon as it is installed and names what a person needs to do. [Details](docs/healing.md).
 
 ## Development
@@ -159,9 +159,9 @@ bun bench/run-bench.ts   # regenerate bench/report after touching programs, src,
 bun scripts/pin-digests.ts
 ```
 
-Tests and the check gate run against recorded Ghostget responses; nothing here
+Tests and the check gate run against recorded GhostGet responses; nothing here
 needs a provider, a browser, or an account. `GHOSTGET_BIN` may point at an
-absolute development build of Ghostget; a relative path is refused.
+absolute development build of GhostGet; a relative path is refused.
 
 ## License
 

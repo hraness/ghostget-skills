@@ -1,6 +1,6 @@
 ---
 name: ghostget-stats
-description: "Collect exact social-profile statistics for a ghostget.collection-plan.v1 document through Ghostget, with contract checks first, sequential reads, Ghostget's one-retry policy as structure, categorical gaps, escalations by kind, and last-good memory. Zero model calls."
+description: "Collect exact social-profile statistics for a ghostget.collection-plan.v1 document through GhostGet, with contract checks first, sequential reads, GhostGet's one-retry policy as structure, categorical gaps, escalations by kind, and last-good memory. Zero model calls."
 argument-hint: "run profile-stats --dir <store> --args <json with src.plan and src.scheduled-date>"
 allowed-tools: ["exec"]
 ---
