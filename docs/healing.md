@@ -12,7 +12,7 @@ The program handles failures itself, so the agent doesn't have to re-plan:
   `capture-required`, or whose auth locator is missing never reaches a
   provider; it is a gap with a `recapture`, `review-plan`, `install-adapter`,
   or `repair-auth` escalation.
-- **Retry as structure.** Ghostget's one-retry disposition is a `repeat` cell
+- **Retry as structure.** GhostGet's one-retry disposition is a `repeat` cell
   with `maxRounds: 2` and an `until` on the attempt record. No prose rule, no
   agent judgment, no accidental second retry.
 - **Isolation per row.** Every read is its own inner organism inside an
@@ -26,26 +26,26 @@ The program handles failures itself, so the agent doesn't have to re-plan:
   in a durable slot; `drift-watch` remembers the last catalog baseline. Both are
   reported, never coerced into today's sample.
 - **Evidence.** Every run is a receipt that `verify` replays offline without
-  Ghostget. A tampered effect fails verification.
+  GhostGet. A tampered effect fails verification.
 
 ## A changed provider contract (needs a person)
 
-When a provider changes its API, Ghostget parks the operation
+When a provider changes its API, GhostGet parks the operation
 `capture-required`. Restoring it requires a new authorised derivation, a
-reviewed code-owned contract in Ghostget, tests, and a release. Neither ALGAL's
+reviewed code-owned contract in GhostGet, tests, and a release. Neither ALGAL's
 foundry search (feedback is pass counts, not failing receipts) nor its
 civilisation loop (candidates may contain only `input`, `const`, and pure `fn`
 cells) can evolve a tool-bearing organism, and even if they could, a contract
-is Ghostget source code, not manifest data.
+is GhostGet source code, not manifest data.
 
 What this package gives that loop instead is the *signal*: `drift-watch`
-detects the change the moment it is installed, `plan-check` names every plan
-affected, and `profile-stats` keeps collecting the independent rows while the
+compares the installed catalog with its saved baseline when run, `plan-check`
+checks the plan you supply, and `profile-stats` keeps collecting independent rows while the
 escalation names the contract that needs a new capture by a person.
 
-## Token efficiency (measured on fixtures)
+## Byte reduction (measured on fixtures)
 
-`bench/report/bench-report.json` compares the raw Ghostget documents an agent
+`bench/report/bench-report.json` compares the raw GhostGet documents an agent
 would read by hand with the outputs a consumer reads. On the recorded
 fixtures the total reduction is the figure in the README's measured-results
 section; it is a byte figure over synthetic fixtures. Live catalogs are much

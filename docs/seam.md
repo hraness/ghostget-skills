@@ -1,14 +1,15 @@
-# GhostGet and ALGAL interface (v1)
+# Original GhostGet and ALGAL integration plan
 
-This is the frozen interface both repositories build against. Ghostget
-implements section A; this package implements section B; section C names the
-first consumer.
+This document records the original September 2026 integration plan. Its
+examples, release steps, and consumer changes describe that design stage.
+Use [Programs](programs.md) for the implemented program interfaces and the
+pinned GhostGet package's contract schemas for provider documents.
 
-Owner split. Ghostget owns provider acquisition, account binding, invocation
+Owner split. GhostGet owns provider acquisition, account binding, invocation
 authority, and a **machine-checkable contract surface**. It never bundles a
 planner, model, or agent runtime (ghostget `AGENTS.md` rule 30). A separate
 package, `ghostget-skills`, owns ALGAL organisms, the tool registry that
-wraps the Ghostget CLI, agent skills, benchmarks, and consumer-facing
+wraps the GhostGet CLI, agent skills, benchmarks, and consumer-facing
 programs. Consumers (jungle, peopleblade, textbutler, …) run
 `ghostget-skills run <program>` and consume the typed receipt.
 
@@ -25,9 +26,9 @@ consumer  ──run──▶  ghostget-skills (algal organisms + ToolRegistry)
 
 ### A1. `ghostget contracts catalog [--adapter <id>]... --json`
 
-Emits `ghostget.contract-catalog.v1`: a compact, stable projection of the
-installed capability catalog. Unlike `capabilities --json` (~424 KB, ad hoc
-`unknown[]`), this is typed, documented, schema-backed, and ~10× smaller.
+Emits `ghostget.contract-catalog.v1`: a stable projection of the installed
+capability catalog with a documented schema. Catalog size depends on the
+installed adapters; [Metrics](METRICS.md) records the measured sizes.
 
 ```jsonc
 {

@@ -40,7 +40,7 @@ src ─delay-ms──▶ wait (tool: time.wait) ─report──▶ after-wait (e
                                                                                                       └─▶ settle (coalesce) ─▶ attempt
 ```
 
-The retry policy is exactly Ghostget's documented one: at most one retry, after
+The retry policy is exactly GhostGet's documented one: at most one retry, after
 60 seconds, only for `retry-once-after-60s`. Everything else stops on the first
 attempt. A tool that throws (a deadline past the 180 s effect budget, a spawn
 failure) is caught by the `on:"fail"` edge and becomes a `tool-failed` gap with

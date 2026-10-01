@@ -7,7 +7,7 @@ offline.
 GhostGet gives agents a fixed set of provider actions, but using them well
 still takes a sequence of steps the agent has to reread each time: check the
 catalog, confirm each read is observed and R1, wait sixty seconds before the
-LinkedIn company read, retry once after sixty seconds only on a throttle, never
+LinkedIn company read, retry once after sixty seconds when the failure policy permits, never
 retry a repair-auth, and keep going with the independent rows. This package
 writes those sequences down as [ALGAL](https://github.com/hraness/algal)
 programs (ALGAL calls them organisms). Each program is a data file the ALGAL
@@ -16,7 +16,7 @@ program rather than instructions for the agent, the GhostGet CLI runs inside
 capped tool calls, and every run produces a receipt that replays bit-for-bit
 without contacting a provider.
 
-[Programs](docs/programs.md) · [Interface with GhostGet](docs/seam.md) · [What recovery covers](docs/healing.md) · [Metrics](docs/METRICS.md)
+[Programs](docs/programs.md) · [Original integration plan](docs/seam.md) · [What recovery covers](docs/healing.md) · [Metrics](docs/METRICS.md)
 
 ## Install
 
@@ -75,7 +75,7 @@ what `profile-stats` embeds by digest; see [docs/programs.md](docs/programs.md).
 
 ```
 consumer ──run──▶ ghostget-skills (organisms + fns + ToolRegistry)
-                       │ fixed argv · --json · stdin · byte caps · 120 s + 45 s grace
+                       │ fixed argv · --json · stdin · byte caps · deadlines
                        ▼
                   ghostget CLI  (contracts catalog | contracts check | invoke | read | doctor | auth list)
                        │
@@ -146,9 +146,10 @@ edges, escalations from a closed set (`repair-auth`, `rebind`, `recapture`,
 `install-adapter`), durable last-good and baseline memory, and receipts that
 fail verification when tampered with.
 
-Not claimed: repairing a drifted provider contract. That is a new authorised
-capture and a reviewed GhostGet release. This package detects the change as
-soon as it is installed and names what a person needs to do. [Details](docs/healing.md).
+Repairing a changed provider contract requires a new authorised capture and a
+reviewed GhostGet release. Running `drift-watch` compares the installed catalog
+with its saved baseline and reports changes; it does not monitor providers in
+the background. [Details](docs/healing.md).
 
 ## Development
 
