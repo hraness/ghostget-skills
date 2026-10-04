@@ -35,6 +35,30 @@ fixing. Add `--json` for the full report. Every command has `--help`, and
 `ghostget-skills run <program> --help` lists that program's inputs. GhostGet's own account setup (`ghostget auth add`, `auth
 bind`, `adapter sync-bundled`) is unchanged and stays in GhostGet.
 
+## Read a page and replay the result
+
+Start with a public page so you do not need an account or a collection plan:
+
+```sh
+ghostget-skills run page-read \
+  --args '{"src":{"url":"https://example.com"}}' > page-run.json
+ghostget-skills verify page-run.json
+```
+
+Open `page-run.json` to inspect `outputs.report` for the title, canonical URL,
+Markdown, and whether the text is clipped. `outputs.text` contains the formatted
+extract. Verification prints a JSON report with `ok: true` when the saved run
+replays correctly. Replay does not contact the page again, so it checks the saved
+execution rather than whether the page is still current. Keep the default run
+output when you want to verify it; `--quiet` outputs omit the replay data.
+
+The page extract defaults to 16,000 bytes. Set `src.max-bytes` to an integer
+to change the limit; values are clamped to 512 through 131,072 bytes. This clips
+the returned Markdown, not the page GhostGet fetches.
+
+For account reads, use the collection-plan workflow below. See the
+[program reference](docs/programs.md) for each program's inputs and outputs.
+
 ## Use
 
 ```sh
@@ -150,6 +174,18 @@ Repairing a changed provider contract requires a new authorised capture and a
 reviewed GhostGet release. Running `drift-watch` compares the installed catalog
 with its saved baseline and reports changes; it does not monitor providers in
 the background. [Details](docs/healing.md).
+
+## Troubleshooting
+
+- If `doctor` cannot find GhostGet, reinstall this package with its dependencies.
+  If you use `GHOSTGET_BIN`, set it to an existing absolute executable path;
+  relative paths are rejected. Run `ghostget-skills doctor --json` to inspect
+  which check fails before you try a provider read.
+- If a program name is not found, run `ghostget-skills list`, then
+  `ghostget-skills run <program> --help` to check its input names.
+- If verification cannot identify the program, pass its `.algal.json` file after
+  the saved run file. Use the same program definition that created the run.
+  Verification checks replay, not account readiness; use `doctor` for readiness.
 
 ## Development
 
