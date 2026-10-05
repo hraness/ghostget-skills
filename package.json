@@ -1,7 +1,7 @@
 {
   "name": "ghostget-skills",
   "version": "0.1.0",
-  "description": "Agent skills for Claude Code, Codex, and Devin that run GhostGet provider reads, plan checks, and contract-drift checks as fixed ALGAL programs, with no model calls and a replayable receipt for every run.",
+  "description": "Ghostget skills for Claude Code, Codex, and Devin: ALGAL organisms over machine-checkable Ghostget contracts. Typed provider reads, plan checks, drift watch, and replayable receipts with zero model calls.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@hraness/algal": "github:hraness/algal#fcea4923fddaaaecfe4dc1468645b95e20205fc8",
-    "@hraness/ghostget": "https://github.com/hraness/ghostget/releases/download/v0.18.79/hraness-ghostget-0.18.79.tgz"
+    "@hraness/ghostget": "https://github.com/hraness/ghostget/releases/download/v0.18.84/hraness-ghostget-0.18.84.tgz"
   },
   "devDependencies": {
     "@types/bun": "^1.2.0",
