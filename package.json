@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@hraness/algal": "github:hraness/algal#fcea4923fddaaaecfe4dc1468645b95e20205fc8",
-    "@hraness/ghostget": "github:hraness/ghostget#8054da03e19a68fabac624621d92d18f33583361"
+    "@hraness/ghostget": "https://github.com/hraness/ghostget/releases/download/v0.18.79/hraness-ghostget-0.18.79.tgz"
   },
   "devDependencies": {
     "@types/bun": "^1.2.0",
